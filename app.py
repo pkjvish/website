@@ -34,7 +34,7 @@ DASHBOARD_HTML = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floating Mini Card Dashboard</title>
-    <!-- Absolute paths for CSS CDNs - FIXED WITH HTTPS PREFIX -->
+    <!-- Absolute paths for CSS CDNs -->
     <link href="jsdelivr.net" rel="stylesheet">
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
@@ -115,12 +115,13 @@ DASHBOARD_HTML = """
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-top: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
             z-index: 1000;
+            transition: all 0.3s ease-in-out;
         }
         
         .form-control-custom {
@@ -143,18 +144,39 @@ DASHBOARD_HTML = """
             border: none;
             transition: all 0.2s;
         }
-        .btn-dock-submit:hover { background: #4338ca; transform: translateY(-1px); }
+        .btn-dock-submit:hover { background: #4338ca; }
+        
+        .btn-toggle-main {
+            border-radius: 50px;
+            font-weight: 600;
+            padding: 10px 24px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            transition: all 0.2s;
+        }
         
         /* Toast aligned directly above the bottom input bar controls */
         #toastContainer {
             position: fixed;
-            bottom: 125px;
+            bottom: 110px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1060;
             width: auto;
             min-width: 320px;
             max-width: 90%;
+        }
+        
+        /* Smooth fade for the internal fields container */
+        .hidden-fields-tray {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hidden-fields-tray.show {
+            max-height: 200px;
+            opacity: 1;
+            padding-top: 10px;
         }
     </style>
 </head>
@@ -172,31 +194,47 @@ DASHBOARD_HTML = """
         </div>
     </div>
 
-    <!-- Status Toast Alert Banner Notification - RE-POSITIONED AT THE BOTTOM -->
+    <!-- Status Toast Alert Banner Notification -->
     <div id="toastContainer">
         <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition text-center" role="alert"></div>
     </div>
 
     <!-- Fixed Bottom User Entry Dock Component -->
-    <div class="bottom-dock py-3">
+    <div class="bottom-dock py-3 text-center">
         <div class="container-fluid px-5">
-            <h6 class="fw-bold text-slate-700 mb-2"><i class="bi bi-person-plus-fill text-success me-1"></i> Register New Entry</h6>
-            <form id="customerForm" class="row g-3 align-items-center">
-                <div class="col-12 col-md-4">
-                    <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
+            
+            <!-- Baseline State: Only Add User Button Visible Initially -->
+            <div id="triggerButtonContainer" class="mb-1">
+                <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main px-4 py-2">
+                    <i class="bi bi-person-plus-fill me-1"></i> Add User
+                </button>
+            </div>
+
+            <!-- Dynamic Hidden Form Fields Tray Component -->
+            <div id="formFieldsTray" class="hidden-fields-tray">
+                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                    <h6 class="fw-bold text-slate-700 m-0"><i class="bi bi-file-earmark-person text-success me-1"></i> Input Profile Parameters</h6>
+                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" style="font-size: 0.8rem;" aria-label="Close"></button>
                 </div>
-                <div class="col-12 col-md-2">
-                    <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
-                </div>
-                <div class="col-12 col-md-4">
-                    <input type="email" id="custEmail" required placeholder="Email Address (e.g. pankaj@email.com)" class="form-control form-control-custom shadow-none">
-                </div>
-                <div class="col-12 col-md-2">
-                    <button type="submit" class="btn btn-primary btn-dock-submit w-100 shadow-sm">
-                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Add User
-                    </button>
-                </div>
-            </form>
+                
+                <form id="customerForm" class="row g-3 align-items-center">
+                    <div class="col-12 col-md-4">
+                        <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <input type="email" id="custEmail" required placeholder="Email Address (e.g. santosh@email.com)" class="form-control form-control-custom shadow-none">
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <button type="submit" class="btn btn-primary btn-dock-submit w-100 shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Submit User
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
         </div>
     </div>
 
@@ -210,12 +248,26 @@ DASHBOARD_HTML = """
             'Bypass-Tunnel-Reminder': 'true'
         };
 
-        // Elegant pastel color options for mini-visiting cards 
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
+
+        // Toggles the visibility state of the input controls dynamically on click
+        function toggleFormTray(shouldOpen) {
+            const tray = document.getElementById('formFieldsTray');
+            const mainBtn = document.getElementById('mainToggleBtn');
+            
+            if (shouldOpen) {
+                tray.classList.add('show');
+                mainBtn.classList.add('d-none'); // Hide lone button while form is open
+            } else {
+                tray.classList.remove('show');
+                mainBtn.classList.remove('d-none');
+                document.getElementById('customerForm').reset();
+            }
+        }
 
         function showNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-lg border mountaineer-toast p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
+            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
             alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> ${message}`;
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
@@ -228,7 +280,6 @@ DASHBOARD_HTML = """
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
 
-                // Strip instruction string blocks from rendering
                 const customers = data.filter(item => item.user_id !== undefined);
 
                 if (customers.length === 0) {
@@ -244,7 +295,6 @@ DASHBOARD_HTML = """
                     
                     board.innerHTML += `
                         <div class="mini-card" style="background-color: ${assignedColor};">
-                            <!-- X Cross Delete Handle Trigger -->
                             <button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card">
                                 <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
                             </button>
@@ -278,9 +328,8 @@ DASHBOARD_HTML = """
             try {
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    // TOAST COMES TO THE BOTTOM NOW
                     showNotification(`Mini card for "${name}" instantiated on top.`);
-                    document.getElementById('customerForm').reset();
+                    toggleFormTray(false); // Collapse panel tray smoothly on validation success
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
@@ -309,7 +358,7 @@ DASHBOARD_HTML = """
         window.onload = fetchCustomerCards;
     </script>
     
-    <!-- Absolute path for Bootstrap JS bundle CDN - FIXED WITH HTTPS PREFIX -->
+    <!-- Absolute path for Bootstrap JS bundle CDN -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>
