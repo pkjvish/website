@@ -1,0 +1,77 @@
+name: python with flask
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print Runner IPs
+        run: |
+      - name: Check Runner IP
+        run: |
+          curl https://api.ipify.org 
+          echo "private ip "
+          hostname -I | awk '{print $1}'
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install gunicorn flask
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Start MySQL Service
+        run: |
+          # 1. Start MySQL service
+          sudo systemctl start mysql
+
+          # 2. Wait and Ping until MySQL is actually responding
+          echo "Waiting for MySQL to be ready..."
+          until sudo mysqladmin ping -h "localhost" --silent; do
+            echo "MySQL is still starting up... waiting 2 seconds"
+            sleep 2
+          done
+          echo "✅ MySQL is UP and running!"
+          echo "'root'@'localhost'"
+
+          # 3. Securely update the root password from 'root' to 'password' to match your app.py config
+          sudo mysql -u root -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;"
+          if [ -f init.sql ]; then
+            echo "Executing init.sql..."
+            sudo mysql -u root -p'password' < init.sql
+            echo "✅ init.sql executed successfully!"
+          else
+            echo "⚠️ init.sql file not found in the root directory!"
+          fi
+          
+          # 4. Wait for the app to initialize
+          sleep 20
+
+      - name: Deploy and Expose
+        run: |
+          # 1. Force kill anything on port 5000
+          sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
+
+          # 4. Wait for Gunicorn to stabilize
+          sleep 10
+
+          # 2. Install LocalTunnel
+          sudo npm install -g localtunnel
+
+          # 3. RUN THE APP DIRECTLY (This replaces Gunicorn)
+          python app.py &
+
+          # 4. Wait for the app to initialize
+          sleep 10
+
+          # 5. Start the tunnel
+          lt --port 5000 
+          
