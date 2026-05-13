@@ -26,54 +26,128 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Modern Bootstrap 5 Card-Based SPA Dashboard UI Layout
+# Modern Bootstrap 5 Sticky Note Business Card SPA Dashboard UI Layout
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Profile Matrix</title>
+    <title>Sticky Notes Customer Matrix</title>
     <!-- Absolute paths for CSS CDNs -->
     <link href="jsdelivr.net" rel="stylesheet">
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
-        body { background-color: #f1f5f9; font-family: 'Segoe UI', system-ui, sans-serif; }
-        .profile-card { border: none; border-radius: 16px; background: #ffffff; transition: all 0.25s ease; position: relative; }
-        .profile-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.06)!important; }
-        .delete-btn { position: absolute; top: 12px; right: 12px; border: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; cursor: pointer; }
-        .delete-btn:hover { background: #ef4444; color: #ffffff; transform: rotate(90deg); }
-        .avatar-emblem { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; }
-        .form-control { border-radius: 10px; border-color: #e2e8f0; padding: 10px 14px; font-size: 0.95rem; }
+        body { 
+            background-color: #e5e7eb; 
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 16px 16px;
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+        }
+        
+        /* Sticky Note / Visiting Card Design Grid */
+        .sticky-note-card {
+            border: none;
+            border-radius: 4px;
+            padding: 24px;
+            min-height: 200px;
+            position: relative;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        /* Subtle rotation logic to make cards look like real stuck notes */
+        .sticky-note-card:nth-child(even) { transform: rotate(1.5deg); }
+        .sticky-note-card:nth-child(odd) { transform: rotate(-1.5deg); }
+        .sticky-note-card:nth-child(3n) { transform: rotate(2deg); }
+        
+        .sticky-note-card:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            box-shadow: 10px 15px 25px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+        
+        /* Pin Header effect simulation */
+        .sticky-note-card::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 12px;
+            background-color: rgba(255,255,255,0.4);
+            border-radius: 2px;
+        }
+
+        /* Sleek Cross Closing Action Button */
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: none;
+            background: transparent;
+            color: rgba(0, 0, 0, 0.4);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .card-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            letter-spacing: -0.5px;
+        }
+        
+        .card-meta {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(0,0,0,0.5);
+        }
+        
+        .form-control { border-radius: 8px; border-color: #cbd5e1; }
         .form-control:focus { box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); border-color: #4f46e5; }
-        .btn-submit { border-radius: 10px; padding: 11px; font-weight: 600; background: #4f46e5; border: none; }
+        .btn-submit { border-radius: 8px; font-weight: 600; background: #4f46e5; border: none; }
         .btn-submit:hover { background: #4338ca; }
     </style>
 </head>
 <body>
 
     <div class="container py-5">
-        <!-- Header Section -->
-        <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-5 border-bottom">
+        <!-- Header -->
+        <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-5 border-bottom border-secondary-subtle">
             <div>
-                <h1 class="fw-black text-dark mb-1"><i class="bi bi-person-vcard text-primary me-2"></i>Customer Matrix</h1>
-                <p class="text-muted mb-0">Single Page Profile Engine with dynamic card instantiation.</p>
+                <h1 class="fw-black text-dark mb-1"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Sticky Card Board</h1>
+                <p class="text-muted mb-0">Single Page Matrix rendering random color visiting card layouts dynamically.</p>
             </div>
             <div class="mt-3 mt-md-0">
-                <button onclick="fetchCustomerCards()" class="btn btn-white border shadow-sm btn-sm px-3 py-2 fw-semibold text-secondary">
-                    <i class="bi bi-arrow-clockwise me-1 text-primary"></i> Sync Directory
+                <button onclick="fetchCustomerCards()" class="btn btn-light border shadow-sm btn-sm px-3 py-2 fw-semibold text-secondary">
+                    <i class="bi bi-arrow-clockwise me-1 text-primary"></i> Refresh Board
                 </button>
             </div>
         </header>
 
-        <!-- Status Notification Ribbon -->
+        <!-- Status Notification Banner -->
         <div id="statusAlert" class="alert d-none shadow-sm mb-4" role="alert"></div>
 
         <div class="row g-4">
-            <!-- Left Side Input Interface Card -->
-            <div class="col-12 col-xl-4">
-                <div class="card shadow-sm border p-4 bg-white sticky-top" style="top: 24px; z-index: 100;">
-                    <h5 class="fw-bold text-dark mb-4"><i class="bi bi-plus-circle-fill text-success me-2"></i>Register Profile</h5>
+            <!-- Left Side Control Panel Form -->
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm border p-4 bg-white rounded-3 sticky-top" style="top: 24px; z-index: 100;">
+                    <h5 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-medical-fill text-success me-2"></i>Create Note Parameters</h5>
                     
                     <form id="customerForm">
                         <div class="mb-3">
@@ -88,20 +162,20 @@ DASHBOARD_HTML = """
                             <label class="form-label text-muted fw-bold small text-uppercase">Email Address</label>
                             <input type="email" id="custEmail" required placeholder="e.g. pankaj@example.com" class="form-control shadow-none">
                         </div>
-                        <button type="submit" class="btn btn-primary btn-submit w-100 shadow-sm">
-                            <i class="bi bi-person-plus-fill me-1"></i> Instantiation Card
+                        <button type="submit" class="btn btn-primary btn-submit w-100 shadow-sm py-2">
+                            <i class="bi bi-pin-fill me-1"></i> Pin to Dashboard
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Right Side Customer Cards Deck display area -->
-            <div class="col-12 col-xl-8">
-                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Active Card Deck</h5>
+            <!-- Right Side Sticky Notes Pinboard display grid area -->
+            <div class="col-12 col-lg-8">
+                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-kanban-fill text-primary me-2"></i>Active Board Deck</h5>
                 
-                <!-- Explicitly Card Grid Format (No tables) -->
-                <div id="cardsGrid" class="row row-cols-1 row-cols-md-2 g-3">
-                    <!-- Dynamic asynchronous DOM mounting handles cards injection here -->
+                <!-- Display Grid Layout Architecture -->
+                <div id="cardsGrid" class="row row-cols-1 row-cols-md-2 g-4">
+                    <!-- Cards mount here dynamically with unique colors via JS -->
                 </div>
             </div>
         </div>
@@ -117,6 +191,17 @@ DASHBOARD_HTML = """
             'Bypass-Tunnel-Reminder': 'true'
         };
 
+        // Palette of distinct visiting note pastel hex colors
+        const stickNoteColors = [
+            '#fef08a', // Pastel Yellow
+            '#fbcfe8', // Pastel Pink
+            '#bbf7d0', // Pastel Green / Mint
+            '#bfdbfe', // Pastel Blue
+            '#e9d5ff', // Pastel Lavender
+            '#fed7aa', // Pastel Orange
+            '#ccfbf1'  // Pastel Teal
+        ];
+
         function pushNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
             alertBox.className = `alert shadow-sm border mb-4 d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
@@ -124,7 +209,7 @@ DASHBOARD_HTML = """
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
 
-        // 1. FETCH ASYNC: Read database array and render pure cards format
+        // 1. FETCH ASYNC: Read database array and construct diverse colored notes
         async function fetchCustomerCards() {
             try {
                 const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
@@ -132,41 +217,41 @@ DASHBOARD_HTML = """
                 const grid = document.getElementById('cardsGrid');
                 grid.innerHTML = '';
 
-                // Strip operational metadata instruction strings from the array view map
                 const customers = data.filter(item => item.user_id !== undefined);
 
                 if (customers.length === 0) {
                     grid.innerHTML = `
-                        <div class="col-12 w-100 text-center py-5 bg-white border rounded-4 text-muted italic">
-                            <i class="bi bi-person-vcard display-5 d-block mb-2 text-slate-300"></i> No customer cards available in workspace database.
+                        <div class="col-12 w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic">
+                            <i class="bi bi-clipboard-x display-5 d-block mb-2 text-muted"></i> Pinboard is currently empty.
                         </div>`;
                     return;
                 }
 
-                customers.forEach(customer => {
-                    const firstLetter = customer.user_name ? customer.user_name.charAt(0).toUpperCase() : '?';
+                customers.forEach((customer, index) => {
+                    // Unique color assignment math mapping strategy based on index sequence loops
+                    const assignedColor = stickNoteColors[index % stickNoteColors.length];
                     
                     grid.innerHTML += `
                         <div class="col">
-                            <div class="card profile-card h-100 shadow-sm border p-4">
-                                <!-- Cross Delete Trigger button on each profile card layout -->
-                                <button onclick="dropCustomerCard('${customer.user_name}')" class="delete-btn" title="Delete Profile">
-                                    <i class="bi bi-x-lg font-bold" style="font-size: 0.85rem;"></i>
+                            <div class="sticky-note-card shadow" style="background-color: ${assignedColor};">
+                                <!-- Cross Delete Handle Button -->
+                                <button onclick="dropCustomerCard('${customer.user_name}')" class="delete-btn" title="Remove Card">
+                                    <i class="bi bi-x-lg font-bold" style="font-size: 0.9rem;"></i>
                                 </button>
                                 
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <div class="avatar-emblem bg-indigo-subtle text-indigo text-primary">
-                                        ${firstLetter}
-                                    </div>
-                                    <div class="overflow-hidden">
-                                        <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 180px;">${customer.user_name}</h6>
-                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill mt-1">Age: ${customer.user_age} yrs</span>
+                                <div class="mt-2">
+                                    <div class="card-name text-truncate">${customer.user_name}</div>
+                                    <div class="card-meta mt-1">
+                                        <i class="bi bi-calendar-event me-1"></i> Age: ${customer.user_age} years old
                                     </div>
                                 </div>
                                 
-                                <div class="pt-2 border-top">
-                                    <div class="text-secondary small d-flex align-items-center gap-1.5 text-truncate">
-                                        <i class="bi bi-envelope-at text-muted"></i> ${customer.user_email}
+                                <div class="pt-3 border-top border-dark border-opacity-10 mt-4">
+                                    <div class="text-dark text-opacity-70 small text-truncate fw-medium">
+                                        <i class="bi bi-envelope-at-fill me-1 opacity-50"></i> ${customer.user_email}
+                                    </div>
+                                    <div class="text-end text-dark text-opacity-25 font-monospace fs-7 fw-bold mt-2">
+                                        #ID-${customer.user_id}
                                     </div>
                                 </div>
                             </div>
@@ -177,7 +262,7 @@ DASHBOARD_HTML = """
             }
         }
 
-        // 2. POST ASYNC: Appends profile entries on same page via background thread processing
+        // 2. POST ASYNC: Appends notes onto live view layout
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('custName').value.trim();
@@ -187,37 +272,38 @@ DASHBOARD_HTML = """
             try {
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    pushNotification(`Profile card for "${name}" generated safely.`);
+                    pushNotification(`Sticky visiting card for "${name}" pinned safely.`);
                     document.getElementById('customerForm').reset();
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
-                    pushNotification(errData.error || "Failed to map parameters entry structure.", false);
+                    pushNotification(errData.error || "Failed to parse parameter inputs.", false);
                 }
             } catch (err) {
-                pushNotification("Network runtime write failure.", false);
+                pushNotification("Network runtime processing error.", false);
             }
         });
 
-        // 3. DELETE ASYNC: Removes and drops structural parameters instantly from screen
+        // 3. DELETE ASYNC: Erases note card map parameters instantly
         async function dropCustomerCard(name) {
+            if (!confirm(`Wipe "${name}" from the active board?`)) return;
             try {
                 const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    pushNotification(`User "${name}" has been wiped from database arrays.`);
+                    pushNotification(`User card "${name}" successfully cleared from board configuration maps.`);
                     fetchCustomerCards();
                 } else {
-                    pushNotification(`Could not execute card drop operation. Profile not located.`, false);
+                    pushNotification(`Could not complete card deletion profile cycle.`, false);
                 }
             } catch (err) {
-                pushNotification("Network connection failure during deletion cycle.", false);
+                pushNotification("Network fault encountered during profile deletion execution.", false);
             }
         }
 
         window.onload = fetchCustomerCards;
     </script>
     
-    <!-- Absolute path for JS bundle CDN -->
+    <!-- Absolute path for Bootstrap JS bundle CDN -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>
@@ -243,7 +329,7 @@ def list_all_users():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 5. ROUTE: ADD USER VIA URL QUERY PARAMETERS (Includes Age processing mapping)
+# 5. ROUTE: ADD USER VIA URL QUERY PARAMETERS
 @app.route('/userc', methods=['GET'])
 def add_user_via_url():
     name = request.args.get('name')
@@ -258,7 +344,6 @@ def add_user_via_url():
 
     try:
         cur = mysql.connection.cursor()
-        # Updated SQL to write the age column parameters
         cur.execute("INSERT INTO tbl_user(user_name, user_age, user_email) VALUES (%s, %s, %s)", (name, age, email))
         mysql.connection.commit()
         
