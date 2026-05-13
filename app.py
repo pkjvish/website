@@ -19,14 +19,14 @@ def get_all_users_list(cursor):
     user_list = []
     for row in rows:
         user_list.append({
-            "user_id": row[0],
-            "user_name": row[1],
-            "user_age": row[2],
-            "user_email": row[3]
+            "user_id": row,
+            "user_name": row,
+            "user_age": row,
+            "user_email": row
         })
     return user_list
 
-# Corrected Multi-Column Inverted Card-Based SPA Layout String Literal
+# Restructured HTML with Explicit Horizontal Flex Layout
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,7 +42,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             background-size: 24px 24px;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding-bottom: 180px;
+            padding-bottom: 140px;
         }
         .mini-card {
             border: none;
@@ -102,7 +102,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid rgba(226, 232, 240, 0.9);
@@ -115,7 +115,6 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             padding: 10px 14px;
             font-size: 0.9rem;
             transition: all 0.2s;
-            width: 100%;
         }
         .form-control-custom:focus {
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
@@ -124,13 +123,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         }
         .btn-dock-submit {
             border-radius: 10px;
-            padding: 11px 20px;
+            padding: 10px 24px;
             font-weight: 600;
             background: #4f46e5;
             border: none;
-            width: 100%;
             transition: all 0.2s;
             color: #ffffff;
+            white-space: nowrap;
         }
         .btn-dock-submit:hover { background: #4338ca; }
         .btn-toggle-main {
@@ -140,10 +139,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
             transition: all 0.2s;
         }
-        .btn-toggle-main:hover { transform: translateY(-1px); }
         #toastContainer {
             position: fixed;
-            bottom: 130px;
+            bottom: 110px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1060;
@@ -158,9 +156,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hidden-fields-tray.show {
-            max-height: 250px;
+            max-height: 120px;
             opacity: 1;
-            padding: 10px 0;
+            padding: 5px 0;
         }
     </style>
 </head>
@@ -184,25 +182,21 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                     <i class="bi bi-person-plus-fill me-1"></i> Add User
                 </button>
             </div>
+            
             <div id="formFieldsTray" class="hidden-fields-tray">
-                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                    <h6 class="fw-bold text-slate-700 m-0"><i class="bi bi-file-earmark-person text-success me-1"></i> Input Profile Parameters</h6>
-                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" aria-label="Close"></button>
-                </div>
-                <form id="customerForm" class="row gx-3 gy-2 align-items-center">
-                    <div class="col-12 col-md-4">
+                <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-2 w-100">
+                    <div class="flex-grow-1 mb-2 mb-md-0">
                         <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="col-12 col-md-2">
+                    <div class="mb-2 mb-md-0" style="min-width: 100px; max-width: 140px;">
                         <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="flex-grow-1 mb-2 mb-md-0">
                         <input type="email" id="custEmail" required placeholder="Email Address" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="col-12 col-md-2">
-                        <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">
-                            <i class="bi bi-check-circle-fill me-1"></i> Submit User
-                        </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">Submit User</button>
+                        <button type="button" onclick="toggleFormTray(false)" class="btn btn-outline-secondary rounded-3 px-3">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -309,10 +303,7 @@ def list_all_users():
         cur = mysql.connection.cursor()
         user_list = get_all_users_list(cur)
         cur.close()
-        
-        user_list.append({
-            "instruction": "To add a user, go to /userc?name=abc&age=25&email=abc.com. To delete a user, go to /userd?name=abc"
-        })
+        user_list.append({"instruction": "To add a user, go to /userc?name=abc&age=25&email=abc.com. To delete a user, go to /userd?name=abc"})
         return jsonify(user_list), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -325,22 +316,15 @@ def add_user_via_url():
     email = request.args.get('email')
 
     if not name or not age or not email:
-        return jsonify({
-            "error": "Missing query parameters.",
-            "instruction": "Please build your URL target exactly like this: /userc?name=abc&age=25&email=abc.com"
-        }), 400
+        return jsonify({"error": "Missing query parameters.", "instruction": "Please build your URL target exactly like this: /userc?name=abc&age=25&email=abc.com"}), 400
 
     try:
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO tbl_user(user_name, user_age, user_email) VALUES (%s, %s, %s)", (name, age, email))
         mysql.connection.commit()
-        
         user_list = get_all_users_list(cur)
         cur.close()
-        
-        user_list.append({
-            "instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&age=25&email=abc.com"
-        })
+        user_list.append({"instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&age=25&email=abc.com"})
         return jsonify(user_list), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -351,33 +335,22 @@ def delete_user_via_url():
     name = request.args.get('name')
 
     if not name:
-        return jsonify({
-            "error": "Missing target query parameter.",
-            "instruction": "Please pass the user name to remove like this: /userd?name=abc"
-        }), 400
+        return jsonify({"error": "Missing target query parameter.", "instruction": "Please pass the user name to remove like this: /userd?name=abc"}), 400
 
     try:
         cur = mysql.connection.cursor()
-        
         cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
         if not cur.fetchone():
             user_list = get_all_users_list(cur)
             cur.close()
-            user_list.append({
-                "error": f"User '{name}' not found.",
-                "instruction": "Verify spelling or review active profiles at /users"
-            })
+            user_list.append({"error": f"User '{name}' not found.", "instruction": "Verify spelling or review active profiles at /users"})
             return jsonify(user_list), 404
             
         cur.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
         mysql.connection.commit()
-        
         user_list = get_all_users_list(cur)
         cur.close()
-        
-        user_list.append({
-            "instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."
-        })
+        user_list.append({"instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."})
         return jsonify(user_list), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
