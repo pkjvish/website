@@ -11,7 +11,7 @@ app.config['MYSQL_DB'] = 'crud_db'
 
 mysql = MySQL(app)
 
-# Helper function - FIXED INDEX MAPPING TO PREVENT TEXT WRAPPING ACCUMULATION
+# Helper function to fetch the complete formatted user list
 def get_all_users_list(cursor):
     cursor.execute("SELECT user_id, user_name, user_age, user_email FROM tbl_user")
     rows = cursor.fetchall()
@@ -26,7 +26,7 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Enhanced Layout Template
+# Enhanced Layout Template with clean string concatenation for JavaScript stability
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,6 +91,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             font-weight: 700;
             color: #1e293b;
             padding-right: 18px;
+            line-height: 1.3;
         }
         .user-detail {
             font-size: 0.85rem;
@@ -165,19 +166,17 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     </div>
 
     <div id="toastContainer">
-        <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition text-center" role="alert"></div>
+        <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium text-center" role="alert"></div>
     </div>
 
     <div class="bottom-dock py-3">
         <div class="container-fluid px-4 px-md-5">
-            <!-- Renamed button: 'Create User' -->
             <div id="triggerButtonContainer" class="text-center">
                 <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
                     <i class="bi bi-person-plus-fill me-1"></i> Create User
                 </button>
             </div>
             
-            <!-- Dynamic Form tray context fields wrapper -->
             <div id="formFieldsTray" class="hidden-fields-tray">
                 <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-3 w-100">
                     <div class="flex-grow-1">
@@ -207,57 +206,57 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         };
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
-        // Toggles visibility of 'Create User' button vs Form Input items
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
             const mainBtn = document.getElementById('mainToggleBtn');
             if (shouldOpen) {
                 tray.style.display = 'block';
-                mainBtn.style.display = 'none'; // Hides create user trigger completely
+                mainBtn.style.display = 'none';
             } else {
                 tray.style.display = 'none';
-                mainBtn.style.display = 'inline-block'; // Restores create user trigger button
+                mainBtn.style.display = 'inline-block';
                 document.getElementById('customerForm').reset();
             }
         }
 
-        function showNotification(message, isSuccess = true) {
+        function showNotification(message, isSuccess) {
+            isSuccess = (isSuccess === undefined) ? true : isSuccess;
             const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block \${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
-            alertBox.innerHTML = `<i class="bi \${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> \${message}`;
-            setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
+            alertBox.className = 'alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ' + (isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle');
+            alertBox.innerHTML = '<i class="bi ' + (isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill') + ' me-2"></i> ' + message;
+            setTimeout(function() { alertBox.className = 'alert d-none'; }, 4000);
         }
 
         async function fetchCustomerCards() {
             try {
-                const response = await fetch(`\${API_BASE_URL}/users`, { headers: dashboardHeaders });
+                const response = await fetch(API_BASE_URL + '/users', { headers: dashboardHeaders });
                 const data = await response.json();
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
-                const customers = data.filter(item => item.user_id !== undefined);
+                const customers = data.filter(function(item) { return item.user_id !== undefined; });
                 if (customers.length === 0) {
-                    board.innerHTML = `<div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic"><i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.</div>`;
+                    board.innerHTML = '<div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic"><i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.</div>';
                     return;
                 }
-                customers.forEach((customer, idx) => {
+                customers.forEach(function(customer, idx) {
                     const assignedColor = pastelColors[idx % pastelColors.length];
-                    board.innerHTML += `<div class="mini-card" style="background-color: \${assignedColor};"><button onclick="dropCustomerCard('\${customer.user_name}')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">\${customer.user_name}</div><div class="user-detail mt-1 fw-bold text-dark text-opacity-50"><i class="bi bi-hash small"></i> Age: \${customer.user_age} yrs</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> \solve; \${customer.user_email}</div></div></div>`;
+                    board.innerHTML += '<div class="mini-card" style="background-color: ' + assignedColor + ';"><button onclick="dropCustomerCard(\'' + customer.user_name + '\')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">' + customer.user_name + ' (' + customer.user_age + ' yrs)</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> ' + customer.user_email + '</div></div></div>';
                 });
             } catch (err) {
                 showNotification("Connection failure. Flask backend server unreachable.", false);
             }
         }
 
-        document.getElementById('customerForm').addEventListener('submit', async (e) => {
+        document.getElementById('customerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('custName').value.trim();
             const age = document.getElementById('custAge').value;
             const email = document.getElementById('custEmail').value.trim();
             try {
-                const res = await fetch(`\${API_BASE_URL}/userc?name=\${encodeURIComponent(name)}&age=\${age}&email=\${encodeURIComponent(email)}`, { headers: dashboardHeaders });
+                const res = await fetch(API_BASE_URL + '/userc?name=' + encodeURIComponent(name) + '&age=' + age + '&email=' + encodeURIComponent(email), { headers: dashboardHeaders });
                 if (res.ok) {
-                    showNotification(`Mini card for "\${name}" instantiated on top.`);
-                    toggleFormTray(false); // Hides inputs/Submit button, restores Create User button
+                    showNotification('Mini card for "' + name + '" instantiated on top.', true);
+                    toggleFormTray(false);
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
@@ -270,9 +269,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         async function dropCustomerCard(name) {
             try {
-                const res = await fetch(`\${API_BASE_URL}/userd?name=\${encodeURIComponent(name)}`, { headers: dashboardHeaders });
+                const res = await fetch(API_BASE_URL + '/userd?name=' + encodeURIComponent(name), { headers: dashboardHeaders });
                 if (res.ok) {
-                    showNotification(`Mini card for "\${name}" dropped successfully.`);
+                    showNotification('Mini card for "' + name + '" dropped successfully.', true);
                     fetchCustomerCards();
                 } else {
                     showNotification("Could not execute card wipe operation.", false);
