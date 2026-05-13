@@ -26,15 +26,18 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Corrected Multi-Column Inverted Card-Based SPA Layout String Literal
+# Multi-Column Inverted Card-Based SPA Layout via Cloudflare cdnjs
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floating Mini Card Dashboard</title>
-    <link href="jsdelivr.net" rel="stylesheet">
-    <link href="jsdelivr.net" rel="stylesheet">
+    
+    <!-- Stable Cloudflare cdnjs replacements for Bootstrap 5 and Icons Framework -->
+    <link href="cloudflare.com" rel="stylesheet">
+    <link href="cloudflare.com" rel="stylesheet">
+    
     <style>
         body { 
             background-color: #f1f5f9;
@@ -91,11 +94,13 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             font-weight: 700;
             color: #1e293b;
             padding-right: 18px;
+            word-break: break-word;
         }
         .user-detail {
             font-size: 0.8rem;
             font-weight: 500;
             color: rgba(30, 41, 59, 0.7);
+            word-break: break-word;
         }
         .bottom-dock {
             position: fixed;
@@ -214,173 +219,170 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         const dashboardHeaders = { 
             'X-Requested-From': 'Dashboard',
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
             'Bypass-Tunnel-Reminder': 'true'
         };
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
-            const mainBtn = document.getElementById('mainToggleBtn');
+            const btnContainer = document.getElementById('triggerButtonContainer');
             if (shouldOpen) {
                 tray.classList.add('show');
-                mainBtn.classList.add('d-none');
+                btnContainer.classList.add('d-none');
             } else {
                 tray.classList.remove('show');
-                mainBtn.classList.remove('d-none');
+                btnContainer.classList.remove('d-none');
                 document.getElementById('customerForm').reset();
             }
         }
 
         function showNotification(message, isSuccess = true) {
-            const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
-            alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> ${message}`;
-            setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
+            const el = document.getElementById('statusAlert');
+            el.className = `alert shadow-lg border p-3 rounded-3 text-center ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
+            el.textContent = message;
+            el.classList.remove('d-none');
+            setTimeout(() => el.classList.add('d-none'), 4000);
         }
 
-        async function fetchCustomerCards() {
+        async function fetchAndRenderUsers() {
             try {
-                const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
-                const data = await response.json();
+                const res = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
+                const users = await res.json();
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
-                const customers = data.filter(item => item.user_id !== undefined);
-                if (customers.length === 0) {
-                    board.innerHTML = `<div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic"><i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.</div>`;
+                
+                if(users.length === 0) {
+                    board.innerHTML = '<div class="text-secondary fs-6 py-4 mx-auto"><i class="bi bi-inbox me-2"></i>No profiles pinned yet.</div>';
                     return;
                 }
-                customers.forEach((customer, idx) => {
-                    const assignedColor = pastelColors[idx % pastelColors.length];
-                    board.innerHTML += `<div class="mini-card" style="background-color: ${assignedColor};"><button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">${customer.user_name}</div><div class="user-detail mt-1 fw-bold text-dark text-opacity-50"><i class="bi bi-hash small"></i> Age: ${customer.user_age} yrs</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> ${customer.user_email}</div></div></div>`;
+
+                users.forEach((user, index) => {
+                    const randomColor = pastelColors[index % pastelColors.length];
+                    const card = document.createElement('div');
+                    card.className = 'mini-card';
+                    card.style.backgroundColor = randomColor;
+                    card.innerHTML = `
+                        <button class="cross-delete-btn" onclick="deleteUser(${user.user_id})" title="Remove Pin">
+                            <i class="bi bi-x-lg" style="font-size: 0.7rem; -webkit-text-stroke: 0.5px;"></i>
+                        </button>
+                        <div class="user-title">${user.user_name}</div>
+                        <div class="mt-2">
+                            <div class="user-detail mb-1"><i class="bi bi-calendar3 me-1"></i>${user.user_age} Years Old</div>
+                            <div class="user-detail text-truncate" title="${user.user_email}"><i class="bi bi-envelope me-1"></i>${user.user_email}</div>
+                        </div>
+                    `;
+                    board.appendChild(card);
                 });
             } catch (err) {
-                showNotification("Connection failure. Flask backend server unreachable.", false);
+                showNotification('Could not update user board display.', false);
             }
         }
 
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('custName').value.trim();
-            const age = document.getElementById('custAge').value;
-            const email = document.getElementById('custEmail').value.trim();
+            const payload = {
+                name: document.getElementById('custName').value.trim(),
+                age: parseInt(document.getElementById('custAge').value),
+                email: document.getElementById('custEmail').value.trim()
+            };
+
             try {
-                const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
+                const res = await fetch(`${API_BASE_URL}/users`, {
+                    method: 'POST',
+                    headers: dashboardHeaders,
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                
                 if (res.ok) {
-                    showNotification(`Mini card for "${name}" instantiated on top.`);
-                    toggleFormTray(false); 
-                    fetchCustomerCards();
+                    showNotification(result.message || 'User profile updated successfully!');
+                    toggleFormTray(false);
+                    fetchAndRenderUsers();
                 } else {
-                    const errData = await res.json();
-                    showNotification(errData.error || "Failed to process parameter inputs.", false);
+                    showNotification(result.error || 'Failed to submit profile metrics.', false);
                 }
             } catch (err) {
-                showNotification("Network data runtime transmission error.", false);
+                showNotification('Network connection profile synchronization failed.', false);
             }
         });
 
-        async function dropCustomerCard(name) {
+        async function deleteUser(userId) {
+            if (!confirm('Permanently purge this pinned registration?')) return;
             try {
-                const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
+                const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: dashboardHeaders
+                });
+                const result = await res.json();
+                
                 if (res.ok) {
-                    showNotification(`Mini card for "${name}" dropped successfully.`);
-                    fetchCustomerCards();
+                    showNotification(result.message || 'User successfully dropped.');
+                    fetchAndRenderUsers();
                 } else {
-                    showNotification("Could not execute card wipe operation.", false);
+                    showNotification(result.error || 'Failed to remove requested card.', false);
                 }
             } catch (err) {
-                showNotification("Network connection failure during deletion cycle.", false);
+                showNotification('Execution drop process failed.', false);
             }
         }
-        window.onload = fetchCustomerCards;
+
+        document.addEventListener('DOMContentLoaded', fetchAndRenderUsers);
     </script>
-    <script src="jsdelivr.net"></script>
 </body>
 </html>"""
 
-# 3. ROUTE: SERVES INTEGRATED DASHBOARD SPA
-@app.route('/', methods=['GET'])
-def home_dashboard():
+@app.route('/')
+def index():
     return render_template_string(DASHBOARD_HTML)
 
-# 4. ROUTE: LIST ALL USERS FROM DATABASE
 @app.route('/users', methods=['GET'])
-def list_all_users():
+def read_users():
     try:
-        cur = mysql.connection.cursor()
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": "To add a user, go to /userc?name=abc&age=25&email=abc.com. To delete a user, go to /userd?name=abc"
-        })
-        return jsonify(user_list), 200
+        cursor = mysql.connection.cursor()
+        users = get_all_users_list(cursor)
+        cursor.close()
+        return jsonify(users), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 5. ROUTE: ADD USER VIA URL QUERY PARAMETERS
-@app.route('/userc', methods=['GET'])
-def add_user_via_url():
-    name = request.args.get('name')
-    age = request.args.get('age')
-    email = request.args.get('email')
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json() or {}
+    name = data.get('name')
+    age = data.get('age')
+    email = data.get('email')
 
     if not name or not age or not email:
-        return jsonify({
-            "error": "Missing query parameters.",
-            "instruction": "Please build your URL target exactly like this: /userc?name=abc&age=25&email=abc.com"
-        }), 400
+        return jsonify({"error": "Missing mandatory profile criteria elements."}), 400
 
     try:
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO tbl_user(user_name, user_age, user_email) VALUES (%s, %s, %s)", (name, age, email))
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "INSERT INTO tbl_user (user_name, user_age, user_email) VALUES (%s, %s, %s)",
+            (name, age, email)
+        )
         mysql.connection.commit()
-        
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&age=25&email=abc.com"
-        })
-        return jsonify(user_list), 201
+        cursor.close()
+        return jsonify({"message": "User entity appended successfully."}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 6. ROUTE: DELETE USER BY URL QUERY PARAMETER (BY NAME)
-@app.route('/userd', methods=['GET'])
-def delete_user_via_url():
-    name = request.args.get('name')
-
-    if not name:
-        return jsonify({
-            "error": "Missing target query parameter.",
-            "instruction": "Please pass the user name to remove like this: /userd?name=abc"
-        }), 400
-
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
     try:
-        cur = mysql.connection.cursor()
+        cursor = mysql.connection.cursor()
+        cursor.execute("DELETE FROM tbl_user WHERE user_id = %s", (user_id,))
+        mysql.connection.commit()
         
-        cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
-        if not cur.fetchone():
-            user_list = get_all_users_list(cur)
-            cur.close()
-            user_list.append({
-                "error": f"User '{name}' not found.",
-                "instruction": "Verify spelling or review active profiles at /users"
-            })
-            return jsonify(user_list), 404
+        if cursor.rowcount == 0:
+            cursor.close()
+            return jsonify({"error": "Target unique resource identity key match not found."}), 404
             
-        cur.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
-        mysql.connection.commit()
-        
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."
-        })
-        return jsonify(user_list), 200
+        cursor.close()
+        return jsonify({"message": "Target user records systematically dropped."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(debug=True)
