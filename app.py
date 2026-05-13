@@ -11,7 +11,7 @@ app.config['MYSQL_DB'] = 'crud_db'
 
 mysql = MySQL(app)
 
-# Helper function to fetch the complete formatted user list
+# Helper function - FIXED INDEX MAPPING TO PREVENT TEXT WRAPPING ACCUMULATION
 def get_all_users_list(cursor):
     cursor.execute("SELECT user_id, user_name, user_age, user_email FROM tbl_user")
     rows = cursor.fetchall()
@@ -19,14 +19,14 @@ def get_all_users_list(cursor):
     user_list = []
     for row in rows:
         user_list.append({
-            "user_id": row,
-            "user_name": row,
-            "user_age": row,
-            "user_email": row
+            "user_id": row[0],
+            "user_name": row[1],
+            "user_age": row[2],
+            "user_email": row[3]
         })
     return user_list
 
-# Restructured HTML with Explicit Horizontal Flex Layout
+# Enhanced Layout Template
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +48,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             border: none;
             border-radius: 12px;
             padding: 16px;
-            width: 240px;
+            width: 250px;
             min-height: 125px;
             position: relative;
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -87,14 +87,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             transform: scale(1.1);
         }
         .user-title {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: #1e293b;
             padding-right: 18px;
+            line-height: 1.3;
         }
         .user-detail {
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 0.85rem;
+            font-weight: 600;
             color: rgba(30, 41, 59, 0.7);
         }
         .bottom-dock {
@@ -150,15 +151,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             max-width: 90%;
         }
         .hidden-fields-tray {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .hidden-fields-tray.show {
-            max-height: 120px;
-            opacity: 1;
-            padding: 5px 0;
+            display: none;
+            width: 100%;
         }
     </style>
 </head>
@@ -179,20 +173,20 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         <div class="container-fluid px-4 px-md-5">
             <div id="triggerButtonContainer" class="text-center">
                 <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
-                    <i class="bi bi-person-plus-fill me-1"></i> Add User
+                    <i class="bi bi-person-plus-fill me-1"></i> Create User
                 </button>
             </div>
             
             <div id="formFieldsTray" class="hidden-fields-tray">
-                <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-2 w-100">
-                    <div class="flex-grow-1 mb-2 mb-md-0">
-                        <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
+                <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-3 w-100">
+                    <div class="flex-grow-1">
+                        <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom w-100 shadow-none">
                     </div>
-                    <div class="mb-2 mb-md-0" style="min-width: 100px; max-width: 140px;">
-                        <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
+                    <div style="min-width: 90px; max-width: 120px;">
+                        <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom w-100 shadow-none">
                     </div>
-                    <div class="flex-grow-1 mb-2 mb-md-0">
-                        <input type="email" id="custEmail" required placeholder="Email Address" class="form-control form-control-custom shadow-none">
+                    <div class="flex-grow-1">
+                        <input type="email" id="custEmail" required placeholder="Email Address" class="form-control form-control-custom w-100 shadow-none">
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">Submit User</button>
@@ -216,25 +210,25 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             const tray = document.getElementById('formFieldsTray');
             const mainBtn = document.getElementById('mainToggleBtn');
             if (shouldOpen) {
-                tray.classList.add('show');
-                mainBtn.classList.add('d-none');
+                tray.style.display = 'block';
+                mainBtn.style.display = 'none';
             } else {
-                tray.classList.remove('show');
-                mainBtn.classList.remove('d-none');
+                tray.style.display = 'none';
+                mainBtn.style.display = 'inline-block';
                 document.getElementById('customerForm').reset();
             }
         }
 
         function showNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
-            alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> ${message}`;
+            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block \${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
+            alertBox.innerHTML = `<i class="bi \${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> \${message}`;
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
 
         async function fetchCustomerCards() {
             try {
-                const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
+                const response = await fetch(`\${API_BASE_URL}/users`, { headers: dashboardHeaders });
                 const data = await response.json();
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
@@ -245,7 +239,21 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 }
                 customers.forEach((customer, idx) => {
                     const assignedColor = pastelColors[idx % pastelColors.length];
-                    board.innerHTML += `<div class="mini-card" style="background-color: ${assignedColor};"><button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">${customer.user_name}</div><div class="user-detail mt-1 fw-bold text-dark text-opacity-50"><i class="bi bi-hash small"></i> Age: ${customer.user_age} yrs</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> ${customer.user_email}</div></div></div>`;
+                    // REFACTORED CARD INTERNAL DISPLAY: TOP HAS USERNAME + AGE, BOTTOM HAS ISOLATED EMAIL
+                    board.innerHTML += `
+                        <div class="mini-card" style="background-color: \${assignedColor};">
+                            <button onclick="dropCustomerCard('\${customer.user_name}')" class="cross-delete-btn" title="Delete Card">
+                                <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
+                            </button>
+                            <div>
+                                <div class="user-title text-truncate">\${customer.user_name} (\${customer.user_age} yrs)</div>
+                            </div>
+                            <div class="pt-2 border-top border-dark border-opacity-10 mt-2">
+                                <div class="user-detail text-truncate fw-semibold">
+                                    <i class="bi bi-envelope-at-fill opacity-50 small"></i> \${customer.user_email}
+                                </div>
+                            </div>
+                        </div>`;
                 });
             } catch (err) {
                 showNotification("Connection failure. Flask backend server unreachable.", false);
@@ -258,10 +266,10 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             const age = document.getElementById('custAge').value;
             const email = document.getElementById('custEmail').value.trim();
             try {
-                const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
+                const res = await fetch(`\${API_BASE_URL}/userc?name=\${encodeURIComponent(name)}&age=\${age}&email=\${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    showNotification(`Mini card for "${name}" instantiated on top.`);
-                    toggleFormTray(false); 
+                    showNotification(`Mini card for "\${name}" instantiated on top.`);
+                    toggleFormTray(false);
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
@@ -274,9 +282,9 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
         async function dropCustomerCard(name) {
             try {
-                const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
+                const res = await fetch(`\${API_BASE_URL}/userd?name=\${encodeURIComponent(name)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    showNotification(`Mini card for "${name}" dropped successfully.`);
+                    showNotification(`Mini card for "\${name}" dropped successfully.`);
                     fetchCustomerCards();
                 } else {
                     showNotification("Could not execute card wipe operation.", false);
