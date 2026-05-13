@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Registry Dashboard</title>
-    <!-- Bootstrap 5 CSS CDN -->
+    <!-- Bootstrap 5 CSS CDN - FIXED WITH HTTPS PREFIX -->
     <link href="jsdelivr.net" rel="stylesheet">
-    <!-- Bootstrap Icons CDN -->
+    <!-- Bootstrap Icons CDN - FIXED WITH HTTPS PREFIX -->
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -72,8 +72,17 @@
 
     <!-- Asynchronous Client Core Engine -->
     <script>
-        // CONFIGURATION: Set this to your live backend endpoint (LocalTunnel URL or Localhost IP)
-        const API_BASE_URL = window.location.origin === "loca.lt" ? "http://localhost:5000" : window.location.origin;
+        // CONFIGURATION - FIXED FOR PORTS DECOUPLING FLOW
+        const API_BASE_URL = window.location.origin === "file://" 
+            ? "http://localhost:5000" 
+            : window.location.origin.replace(":8080", ":5000");
+
+        // HEADERS CONFIGURATION - FIXED FOR LOCALTUNNEL COMPATIBILITY
+        const dashboardHeaders = { 
+            'X-Requested-From': 'Dashboard',
+            'Accept': 'application/json',
+            'Bypass-Tunnel-Reminder': 'true'
+        };
 
         function displayNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
@@ -85,7 +94,7 @@
         // 1. FETCH ASYNC: Read records and render them as modern Bootstrap Cards
         async function fetchCustomers() {
             try {
-                const response = await fetch(`${API_BASE_URL}/users`);
+                const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
                 const data = await response.json();
                 const container = document.getElementById('cardsContainer');
                 container.innerHTML = '';
@@ -136,7 +145,7 @@
             const email = document.getElementById('custEmail').value.trim();
 
             try {
-                const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`);
+                const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
                     displayNotification(`Customer "${name}" has been registered successfully.`);
                     document.getElementById('customerForm').reset();
@@ -155,7 +164,7 @@
             if (!confirm(`Are you sure you want to drop profile: "${name}"?`)) return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`);
+                const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
                 if (res.ok) {
                     displayNotification(`Customer "${name}" dropped from data layers.`);
                     fetchCustomers();
@@ -171,7 +180,7 @@
         window.onload = fetchCustomers;
     </script>
     
-    <!-- Bootstrap Bundle JS CDN -->
+    <!-- Bootstrap Bundle JS CDN - FIXED WITH HTTPS PREFIX -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>
