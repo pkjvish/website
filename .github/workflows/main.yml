@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install gunicorn flask
           # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
 
       - name: Start MySQL Service
@@ -67,17 +67,13 @@ jobs:
           sudo npm install -g localtunnel
 
           # 3. Launch the Backend API (Port 5000)
-          python backend/app.py &
-
-          # 4. Launch the Frontend Website UI (Port 8080)
-          cd frontend && python3 -m http.server 8080 &
-          cd ..
+          python app.py &
 
           # 5. Wait for both services to initialize
           sleep 10
 
           # 6. Expose the FRONTEND GUI to the public internet
-          lt --port 8080
+          lt --port 5000
 
 
           
