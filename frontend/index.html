@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Registry Dashboard</title>
-    <!-- Bootstrap 5 CSS CDN - FIXED WITH HTTPS PREFIX -->
+    <!-- Bootstrap 5 CSS CDN - FIXED ABSOLUTE PATH -->
     <link href="jsdelivr.net" rel="stylesheet">
-    <!-- Bootstrap Icons CDN - FIXED WITH HTTPS PREFIX -->
+    <!-- Bootstrap Icons CDN - FIXED ABSOLUTE PATH -->
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
         body { background-color: #f4f6f9; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -72,12 +72,11 @@
 
     <!-- Asynchronous Client Core Engine -->
     <script>
-        // CONFIGURATION - FIXED FOR PORTS DECOUPLING FLOW
-        const API_BASE_URL = window.location.origin === "loca.it" 
+        // CONFIGURATION - Maps dynamically across the pipeline ports
+        const API_BASE_URL = window.location.origin === "file://" 
             ? "http://localhost:5000" 
             : window.location.origin.replace(":8080", ":5000");
 
-        // HEADERS CONFIGURATION - FIXED FOR LOCALTUNNEL COMPATIBILITY
         const dashboardHeaders = { 
             'X-Requested-From': 'Dashboard',
             'Accept': 'application/json',
@@ -99,7 +98,6 @@
                 const container = document.getElementById('cardsContainer');
                 container.innerHTML = '';
 
-                // Filter out the fallback 'instruction' object present at the end of your standard JSON array
                 const customers = data.filter(item => item.user_id !== undefined);
 
                 if (customers.length === 0) {
@@ -111,7 +109,6 @@
                 }
 
                 customers.forEach(customer => {
-                    // Generate initial letter token for card visual emblem
                     const initialToken = customer.user_name ? customer.user_name.charAt(0).toUpperCase() : '?';
                     
                     container.innerHTML += `
@@ -134,13 +131,13 @@
                         </div>`;
                 });
             } catch (err) {
-                displayNotification("Connection breakdown. Verify that your Python API is running.", false);
+                displayNotification("Connection breakdown. Verify that your Python API is running on port 5000.", false);
             }
         }
 
         // 2. POST ASYNC: Process Customer Registration on the same page
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+            e.preventDefault(); // STOPS DEFAULT FORM NAVIGATION CRAWL
             const name = document.getElementById('custName').value.trim();
             const email = document.getElementById('custEmail').value.trim();
 
@@ -176,11 +173,10 @@
             }
         }
 
-        // Load the database directory instantly on bootup
         window.onload = fetchCustomers;
     </script>
     
-    <!-- Bootstrap Bundle JS CDN - FIXED WITH HTTPS PREFIX -->
+    <!-- Bootstrap Bundle JS CDN - FIXED ABSOLUTE PATH -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>
