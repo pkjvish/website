@@ -26,7 +26,7 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Modern Inverted Card-Based SPA Dashboard UI Layout
+# Corrected Multi-Column Inverted Card-Based SPA Layout
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -44,7 +44,7 @@ DASHBOARD_HTML = """
             background-size: 24px 24px;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding-bottom: 160px; /* Space for fixed bottom docker */
+            padding-bottom: 180px; /* Safe padding room for bottom dock */
         }
         
         /* Floating Mini Visiting Card Layout */
@@ -109,19 +109,18 @@ DASHBOARD_HTML = """
             color: rgba(30, 41, 59, 0.7);
         }
 
-        /* Rigid Sticky Control Dock at the Bottom */
+        /* Fixed Flat Glass-Blur Control Dock along bottom viewport */
         .bottom-dock {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.06);
             z-index: 1000;
-            transition: all 0.3s ease-in-out;
         }
         
         .form-control-custom {
@@ -130,6 +129,7 @@ DASHBOARD_HTML = """
             padding: 10px 14px;
             font-size: 0.9rem;
             transition: all 0.2s;
+            width: 100%;
         }
         .form-control-custom:focus {
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
@@ -138,10 +138,11 @@ DASHBOARD_HTML = """
         }
         .btn-dock-submit {
             border-radius: 10px;
-            padding: 10px 20px;
+            padding: 11px 20px;
             font-weight: 600;
             background: #4f46e5;
             border: none;
+            width: 100%;
             transition: all 0.2s;
         }
         .btn-dock-submit:hover { background: #4338ca; }
@@ -149,15 +150,16 @@ DASHBOARD_HTML = """
         .btn-toggle-main {
             border-radius: 50px;
             font-weight: 600;
-            padding: 10px 24px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            padding: 12px 32px;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
             transition: all 0.2s;
         }
+        .btn-toggle-main:hover { transform: translateY(-1px); }
         
         /* Toast aligned directly above the bottom input bar controls */
         #toastContainer {
             position: fixed;
-            bottom: 110px;
+            bottom: 130px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1060;
@@ -166,7 +168,7 @@ DASHBOARD_HTML = """
             max-width: 90%;
         }
         
-        /* Smooth fade for the internal fields container */
+        /* Fixed horizontal dimensions constraint matrix */
         .hidden-fields-tray {
             max-height: 0;
             opacity: 0;
@@ -174,9 +176,9 @@ DASHBOARD_HTML = """
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hidden-fields-tray.show {
-            max-height: 200px;
+            max-height: 250px;
             opacity: 1;
-            padding-top: 10px;
+            padding: 10px 0;
         }
     </style>
 </head>
@@ -200,24 +202,25 @@ DASHBOARD_HTML = """
     </div>
 
     <!-- Fixed Bottom User Entry Dock Component -->
-    <div class="bottom-dock py-3 text-center">
-        <div class="container-fluid px-5">
+    <div class="bottom-dock py-3">
+        <div class="container-fluid px-4 px-md-5">
             
-            <!-- Baseline State: Only Add User Button Visible Initially -->
-            <div id="triggerButtonContainer" class="mb-1">
-                <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main px-4 py-2">
+            <!-- Baseline State Trigger Button -->
+            <div id="triggerButtonContainer" class="text-center">
+                <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
                     <i class="bi bi-person-plus-fill me-1"></i> Add User
                 </button>
             </div>
 
-            <!-- Dynamic Hidden Form Fields Tray Component -->
+            <!-- Horizontal Rows Tray Configuration Layout -->
             <div id="formFieldsTray" class="hidden-fields-tray">
-                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <h6 class="fw-bold text-slate-700 m-0"><i class="bi bi-file-earmark-person text-success me-1"></i> Input Profile Parameters</h6>
-                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" style="font-size: 0.8rem;" aria-label="Close"></button>
+                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" aria-label="Close"></button>
                 </div>
                 
-                <form id="customerForm" class="row g-3 align-items-center">
+                <!-- Fixed structural row grid preventing columns from dropping -->
+                <form id="customerForm" class="row gx-3 gy-2 align-items-center">
                     <div class="col-12 col-md-4">
                         <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
                     </div>
@@ -228,7 +231,7 @@ DASHBOARD_HTML = """
                         <input type="email" id="custEmail" required placeholder="Email Address (e.g. santosh@email.com)" class="form-control form-control-custom shadow-none">
                     </div>
                     <div class="col-12 col-md-2">
-                        <button type="submit" class="btn btn-primary btn-dock-submit w-100 shadow-sm">
+                        <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">
                             <i class="bi bi-check-circle-fill me-1"></i> Submit User
                         </button>
                     </div>
@@ -250,14 +253,13 @@ DASHBOARD_HTML = """
 
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
-        // Toggles the visibility state of the input controls dynamically on click
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
             const mainBtn = document.getElementById('mainToggleBtn');
             
             if (shouldOpen) {
                 tray.classList.add('show');
-                mainBtn.classList.add('d-none'); // Hide lone button while form is open
+                mainBtn.classList.add('d-none');
             } else {
                 tray.classList.remove('show');
                 mainBtn.classList.remove('d-none');
@@ -329,7 +331,7 @@ DASHBOARD_HTML = """
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
                     showNotification(`Mini card for "${name}" instantiated on top.`);
-                    toggleFormTray(false); // Collapse panel tray smoothly on validation success
+                    toggleFormTray(false); 
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
@@ -362,92 +364,3 @@ DASHBOARD_HTML = """
     <script src="jsdelivr.net"></script>
 </body>
 </html>
-"""
-
-# 3. ROUTE: SERVES INTEGRATED DASHBOARD SPA
-@app.route('/', methods=['GET'])
-def home_dashboard():
-    return render_template_string(DASHBOARD_HTML)
-
-# 4. ROUTE: LIST ALL USERS FROM DATABASE
-@app.route('/users', methods=['GET'])
-def list_all_users():
-    try:
-        cur = mysql.connection.cursor()
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": "To add a user, go to /userc?name=abc&age=25&email=abc.com. To delete a user, go to /userd?name=abc"
-        })
-        return jsonify(user_list), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# 5. ROUTE: ADD USER VIA URL QUERY PARAMETERS
-@app.route('/userc', methods=['GET'])
-def add_user_via_url():
-    name = request.args.get('name')
-    age = request.args.get('age')
-    email = request.args.get('email')
-
-    if not name or not age or not email:
-        return jsonify({
-            "error": "Missing query parameters.",
-            "instruction": "Please build your URL target exactly like this: /userc?name=abc&age=25&email=abc.com"
-        }), 400
-
-    try:
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO tbl_user(user_name, user_age, user_email) VALUES (%s, %s, %s)", (name, age, email))
-        mysql.connection.commit()
-        
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&age=25&email=abc.com"
-        })
-        return jsonify(user_list), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# 6. ROUTE: DELETE USER BY URL QUERY PARAMETER (BY NAME)
-@app.route('/userd', methods=['GET'])
-def delete_user_via_url():
-    name = request.args.get('name')
-
-    if not name:
-        return jsonify({
-            "error": "Missing target query parameter.",
-            "instruction": "Please pass the user name to remove like this: /userd?name=abc"
-        }), 400
-
-    try:
-        cur = mysql.connection.cursor()
-        
-        cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
-        if not cur.fetchone():
-            user_list = get_all_users_list(cur)
-            cur.close()
-            user_list.append({
-                "error": f"User '{name}' not found.",
-                "instruction": "Verify spelling or review active profiles at /users"
-            })
-            return jsonify(user_list), 404
-            
-        cur.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
-        mysql.connection.commit()
-        
-        user_list = get_all_users_list(cur)
-        cur.close()
-        
-        user_list.append({
-            "instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."
-        })
-        return jsonify(user_list), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
