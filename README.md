@@ -1,2 +1,2 @@
-# website
-website
+# pyapp
+just a pyapp
