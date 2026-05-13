@@ -11,7 +11,7 @@ app.config['MYSQL_DB'] = 'crud_db'
 
 mysql = MySQL(app)
 
-# Helper function to fetch the complete formatted user list with Age tracking included
+# Helper function to fetch the complete formatted user list
 def get_all_users_list(cursor):
     cursor.execute("SELECT user_id, user_name, user_age, user_email FROM tbl_user")
     rows = cursor.fetchall()
@@ -26,162 +26,182 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Modern Bootstrap 5 Sticky Note Business Card SPA Dashboard UI Layout
+# Modern Inverted Card-Based SPA Dashboard UI Layout
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sticky Notes Customer Matrix</title>
+    <title>Floating Mini Card Dashboard</title>
     <!-- Absolute paths for CSS CDNs -->
     <link href="jsdelivr.net" rel="stylesheet">
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
         body { 
-            background-color: #e5e7eb; 
-            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-            background-size: 16px 16px;
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background-color: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            padding-bottom: 140px; /* Space for fixed bottom docker */
         }
         
-        /* Sticky Note / Visiting Card Design Grid */
-        .sticky-note-card {
+        /* Floating Mini Visiting Card Layout */
+        .mini-card {
             border: none;
-            border-radius: 4px;
-            padding: 24px;
-            min-height: 200px;
+            border-radius: 12px;
+            padding: 16px;
+            width: 240px; /* Precise mini size framework */
+            min-height: 125px;
             position: relative;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            display: flex;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
             flex-direction: column;
             justify-content: space-between;
         }
         
-        /* Subtle rotation logic to make cards look like real stuck notes */
-        .sticky-note-card:nth-child(even) { transform: rotate(1.5deg); }
-        .sticky-note-card:nth-child(odd) { transform: rotate(-1.5deg); }
-        .sticky-note-card:nth-child(3n) { transform: rotate(2deg); }
+        /* Playful rotating sticky note simulation */
+        .mini-card:nth-child(even) { transform: rotate(1deg); }
+        .mini-card:nth-child(odd) { transform: rotate(-1deg); }
         
-        .sticky-note-card:hover {
-            transform: scale(1.05) rotate(0deg) !important;
-            box-shadow: 10px 15px 25px rgba(0,0,0,0.15);
-            z-index: 10;
-        }
-        
-        /* Pin Header effect simulation */
-        .sticky-note-card::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 12px;
-            background-color: rgba(255,255,255,0.4);
-            border-radius: 2px;
+        .mini-card:hover {
+            transform: scale(1.06) rotate(0deg) translateY(-4px) !important;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+            z-index: 50;
         }
 
-        /* Sleek Cross Closing Action Button */
-        .delete-btn {
+        /* Top-Right Cross Closing Button */
+        .cross-delete-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             border: none;
-            background: transparent;
+            background: rgba(0, 0, 0, 0.05);
             color: rgba(0, 0, 0, 0.4);
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
             cursor: pointer;
+            padding: 0;
         }
-        .delete-btn:hover {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+        .cross-delete-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+            transform: scale(1.1);
         }
         
-        .card-name {
-            font-size: 1.2rem;
+        .user-title {
+            font-size: 1rem;
             font-weight: 700;
-            color: #1f2937;
-            letter-spacing: -0.5px;
+            color: #1e293b;
+            padding-right: 18px; /* Avoid overlapping with cross btn */
         }
         
-        .card-meta {
-            font-size: 0.85rem;
+        .user-detail {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(30, 41, 59, 0.7);
+        }
+
+        /* Rigid Sticky Control Dock at the Bottom */
+        .bottom-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+        
+        .form-control-custom {
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .form-control-custom:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+            border-color: #4f46e5;
+            outline: none;
+        }
+        .btn-dock-submit {
+            border-radius: 10px;
+            padding: 10px 20px;
             font-weight: 600;
-            color: rgba(0,0,0,0.5);
+            background: #4f46e5;
+            border: none;
+            transition: all 0.2s;
         }
+        .btn-dock-submit:hover { background: #4338ca; transform: translateY(-1px); }
         
-        .form-control { border-radius: 8px; border-color: #cbd5e1; }
-        .form-control:focus { box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); border-color: #4f46e5; }
-        .btn-submit { border-radius: 8px; font-weight: 600; background: #4f46e5; border: none; }
-        .btn-submit:hover { background: #4338ca; }
+        #toastContainer {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1060;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container py-5">
-        <!-- Header -->
-        <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-5 border-bottom border-secondary-subtle">
+    <!-- Main Container For Top Floating Cards Area -->
+    <div class="container-fluid px-4 pt-4">
+        <header class="d-flex justify-content-between align-items-center mb-4 border-b pb-2">
             <div>
-                <h1 class="fw-black text-dark mb-1"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Sticky Card Board</h1>
-                <p class="text-muted mb-0">Single Page Matrix rendering random color visiting card layouts dynamically.</p>
+                <h3 class="fw-bold text-slate-800 m-0"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Pinboard Board</h3>
+                <p class="text-muted small m-0">Floating mini profile cards directory.</p>
             </div>
-            <div class="mt-3 mt-md-0">
-                <button onclick="fetchCustomerCards()" class="btn btn-light border shadow-sm btn-sm px-3 py-2 fw-semibold text-secondary">
-                    <i class="bi bi-arrow-clockwise me-1 text-primary"></i> Refresh Board
-                </button>
-            </div>
+            <button onclick="fetchCustomerCards()" class="btn btn-sm btn-white border shadow-sm text-secondary fw-semibold">
+                <i class="bi bi-arrow-clockwise text-primary"></i> Sync Board
+            </button>
         </header>
 
-        <!-- Status Notification Banner -->
-        <div id="statusAlert" class="alert d-none shadow-sm mb-4" role="alert"></div>
-
-        <div class="row g-4">
-            <!-- Left Side Control Panel Form -->
-            <div class="col-12 col-lg-4">
-                <div class="card shadow-sm border p-4 bg-white rounded-3 sticky-top" style="top: 24px; z-index: 100;">
-                    <h5 class="fw-bold text-dark mb-4"><i class="bi bi-file-earmark-medical-fill text-success me-2"></i>Create Note Parameters</h5>
-                    
-                    <form id="customerForm">
-                        <div class="mb-3">
-                            <label class="form-label text-muted fw-bold small text-uppercase">Full Name</label>
-                            <input type="text" id="custName" required placeholder="e.g. Pankaj Kumar" class="form-control shadow-none">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label text-muted fw-bold small text-uppercase">Age Parameter</label>
-                            <input type="number" id="custAge" required min="1" max="120" placeholder="e.g. 28" class="form-control shadow-none">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label text-muted fw-bold small text-uppercase">Email Address</label>
-                            <input type="email" id="custEmail" required placeholder="e.g. pankaj@example.com" class="form-control shadow-none">
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-submit w-100 shadow-sm py-2">
-                            <i class="bi bi-pin-fill me-1"></i> Pin to Dashboard
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Right Side Sticky Notes Pinboard display grid area -->
-            <div class="col-12 col-lg-8">
-                <h5 class="fw-bold text-dark mb-4"><i class="bi bi-kanban-fill text-primary me-2"></i>Active Board Deck</h5>
-                
-                <!-- Display Grid Layout Architecture -->
-                <div id="cardsGrid" class="row row-cols-1 row-cols-md-2 g-4">
-                    <!-- Cards mount here dynamically with unique colors via JS -->
-                </div>
-            </div>
+        <!-- Dynamic Card Flex Grid Wrap (Floating top area) -->
+        <div id="cardsBoard" class="d-flex flex-wrap gap-3 align-items-start justify-content-start">
+            <!-- Mini notes load dynamically here -->
         </div>
     </div>
 
-    <!-- Asynchronous Runtime Engine Script -->
+    <!-- Status Toast Alert Banner Notification -->
+    <div id="toastContainer">
+        <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition" role="alert"></div>
+    </div>
+
+    <!-- Fixed Bottom User Entry Dock Component -->
+    <div class="bottom-dock py-3">
+        <div class="container-fluid px-5">
+            <h6 class="fw-bold text-slate-700 mb-2"><i class="bi bi-person-plus-fill text-success me-1"></i> Register New Entry</h6>
+            <form id="customerForm" class="row g-3 align-items-center">
+                <div class="col-12 col-md-4">
+                    <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
+                </div>
+                <div class="col-12 col-md-2">
+                    <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
+                </div>
+                <div class="col-12 col-md-4">
+                    <input type="email" id="custEmail" required placeholder="Email Address (e.g. pankaj@email.com)" class="form-control form-control-custom shadow-none">
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-primary btn-dock-submit w-100 shadow-sm">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Add Entry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AJAX SPA JavaScript Runtime Framework Core -->
     <script>
         const API_BASE_URL = window.location.origin;
 
@@ -191,78 +211,65 @@ DASHBOARD_HTML = """
             'Bypass-Tunnel-Reminder': 'true'
         };
 
-        // Palette of distinct visiting note pastel hex colors
-        const stickNoteColors = [
-            '#fef08a', // Pastel Yellow
-            '#fbcfe8', // Pastel Pink
-            '#bbf7d0', // Pastel Green / Mint
-            '#bfdbfe', // Pastel Blue
-            '#e9d5ff', // Pastel Lavender
-            '#fed7aa', // Pastel Orange
-            '#ccfbf1'  // Pastel Teal
-        ];
+        // Elegant pastel color options for mini-visiting cards 
+        const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
-        function pushNotification(message, isSuccess = true) {
+        function showNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-sm border mb-4 d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
-            alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle' : 'bi-exclamation-triangle'}-fill me-2"></i> ${message}`;
+            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
+            alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> ${message}`;
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
 
-        // 1. FETCH ASYNC: Read database array and construct diverse colored notes
+        // 1. FETCH ASYNC: Pull user records and render top-floating mini cards
         async function fetchCustomerCards() {
             try {
                 const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
                 const data = await response.json();
-                const grid = document.getElementById('cardsGrid');
-                grid.innerHTML = '';
+                const board = document.getElementById('cardsBoard');
+                board.innerHTML = '';
 
+                // Strip instruction string blocks from rendering
                 const customers = data.filter(item => item.user_id !== undefined);
 
                 if (customers.length === 0) {
-                    grid.innerHTML = `
-                        <div class="col-12 w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic">
-                            <i class="bi bi-clipboard-x display-5 d-block mb-2 text-muted"></i> Pinboard is currently empty.
+                    board.innerHTML = `
+                        <div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic">
+                            <i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.
                         </div>`;
                     return;
                 }
 
-                customers.forEach((customer, index) => {
-                    // Unique color assignment math mapping strategy based on index sequence loops
-                    const assignedColor = stickNoteColors[index % stickNoteColors.length];
+                customers.forEach((customer, idx) => {
+                    const assignedColor = pastelColors[idx % pastelColors.length];
                     
-                    grid.innerHTML += `
-                        <div class="col">
-                            <div class="sticky-note-card shadow" style="background-color: ${assignedColor};">
-                                <!-- Cross Delete Handle Button -->
-                                <button onclick="dropCustomerCard('${customer.user_name}')" class="delete-btn" title="Remove Card">
-                                    <i class="bi bi-x-lg font-bold" style="font-size: 0.9rem;"></i>
-                                </button>
-                                
-                                <div class="mt-2">
-                                    <div class="card-name text-truncate">${customer.user_name}</div>
-                                    <div class="card-meta mt-1">
-                                        <i class="bi bi-calendar-event me-1"></i> Age: ${customer.user_age} years old
-                                    </div>
+                    board.innerHTML += `
+                        <div class="mini-card" style="background-color: ${assignedColor};">
+                            <!-- X Cross Delete Handle Trigger -->
+                            <button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card">
+                                <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
+                            </button>
+                            
+                            <div>
+                                <div class="user-title text-truncate">${customer.user_name}</div>
+                                <div class="user-detail mt-1 fw-bold text-dark text-opacity-50">
+                                    <i class="bi bi-hash small"></i> Age: ${customer.user_age} yrs
                                 </div>
-                                
-                                <div class="pt-3 border-top border-dark border-opacity-10 mt-4">
-                                    <div class="text-dark text-opacity-70 small text-truncate fw-medium">
-                                        <i class="bi bi-envelope-at-fill me-1 opacity-50"></i> ${customer.user_email}
-                                    </div>
-                                    <div class="text-end text-dark text-opacity-25 font-monospace fs-7 fw-bold mt-2">
-                                        #ID-${customer.user_id}
-                                    </div>
+                            </div>
+                            
+                            <div class="pt-2 border-top border-dark border-opacity-10 mt-2">
+                                <div class="user-detail text-truncate fw-semibold">
+                                    <i class="bi bi-envelope-at-fill opacity-50 small"></i> ${customer.user_email}
                                 </div>
                             </div>
                         </div>`;
                 });
             } catch (err) {
-                pushNotification("Connection failure. Flask engine backend unreachable.", false);
+                showNotification("Connection failure. Flask backend server unreachable.", false);
             }
         }
 
-        // 2. POST ASYNC: Appends notes onto live view layout
+        // 2. POST ASYNC: Add entries from bottom layout form safely via AJAX
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('custName').value.trim();
@@ -272,31 +279,30 @@ DASHBOARD_HTML = """
             try {
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    pushNotification(`Sticky visiting card for "${name}" pinned safely.`);
+                    showNotification(`Mini card for "${name}" instantiated on top.`);
                     document.getElementById('customerForm').reset();
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
-                    pushNotification(errData.error || "Failed to parse parameter inputs.", false);
+                    showNotification(errData.error || "Failed to process parameter inputs.", false);
                 }
             } catch (err) {
-                pushNotification("Network runtime processing error.", false);
+                showNotification("Network data runtime transmission error.", false);
             }
         });
 
-        // 3. DELETE ASYNC: Erases note card map parameters instantly
+        // 3. DELETE ASYNC: Erase card parameter instantly via cross close button
         async function dropCustomerCard(name) {
-            if (!confirm(`Wipe "${name}" from the active board?`)) return;
             try {
                 const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
                 if (res.ok) {
-                    pushNotification(`User card "${name}" successfully cleared from board configuration maps.`);
+                    showNotification(`Mini card for "${name}" dropped successfully.`);
                     fetchCustomerCards();
                 } else {
-                    pushNotification(`Could not complete card deletion profile cycle.`, false);
+                    showNotification("Could not execute card wipe operation.", false);
                 }
             } catch (err) {
-                pushNotification("Network fault encountered during profile deletion execution.", false);
+                showNotification("Network connection failure during deletion cycle.", false);
             }
         }
 
@@ -309,7 +315,7 @@ DASHBOARD_HTML = """
 </html>
 """
 
-# 3. ROUTE: SERVES INTEGRATED GRAPHICAL DASHBOARD UI
+# 3. ROUTE: SERVES INTEGRATED DASHBOARD SPA
 @app.route('/', methods=['GET'])
 def home_dashboard():
     return render_template_string(DASHBOARD_HTML)
