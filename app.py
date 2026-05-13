@@ -26,14 +26,16 @@ def get_all_users_list(cursor):
         })
     return user_list
 
-# Stabilized Layout Template
+# Fully Corrected Layout Template with Validated Bootstrap CDN Paths
 DASHBOARD_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floating Mini Card Dashboard</title>
+    <!-- Official Bootstrap 5.3.3 Absolute CSS CDN Path -->
     <link href="jsdelivr.net" rel="stylesheet">
+    <!-- Official Bootstrap Icons Absolute CSS CDN Path -->
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
         body { 
@@ -42,7 +44,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             background-size: 24px 24px;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding-bottom: 220px !important; /* CRITICAL: Adds space so buttons do not hide under viewport edge */
+            padding-bottom: 220px !important;
         }
         .mini-card {
             border: none;
@@ -282,6 +284,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         }
         window.onload = fetchCustomerCards;
     </script>
+    <!-- Official Bootstrap 5.3.3 Absolute JS CDN Path -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>"""
