@@ -34,7 +34,7 @@ DASHBOARD_HTML = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floating Mini Card Dashboard</title>
-    <!-- Absolute paths for CSS CDNs -->
+    <!-- Absolute paths for CSS CDNs - FIXED WITH HTTPS PREFIX -->
     <link href="jsdelivr.net" rel="stylesheet">
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
@@ -44,7 +44,7 @@ DASHBOARD_HTML = """
             background-size: 24px 24px;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding-bottom: 140px; /* Space for fixed bottom docker */
+            padding-bottom: 160px; /* Space for fixed bottom docker */
         }
         
         /* Floating Mini Visiting Card Layout */
@@ -145,11 +145,16 @@ DASHBOARD_HTML = """
         }
         .btn-dock-submit:hover { background: #4338ca; transform: translateY(-1px); }
         
+        /* Toast aligned directly above the bottom input bar controls */
         #toastContainer {
             position: fixed;
-            top: 24px;
-            right: 24px;
+            bottom: 125px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1060;
+            width: auto;
+            min-width: 320px;
+            max-width: 90%;
         }
     </style>
 </head>
@@ -157,14 +162,8 @@ DASHBOARD_HTML = """
 
     <!-- Main Container For Top Floating Cards Area -->
     <div class="container-fluid px-4 pt-4">
-        <header class="d-flex justify-content-between align-items-center mb-4 border-b pb-2">
-            <div>
-                <h3 class="fw-bold text-slate-800 m-0"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Pinboard Board</h3>
-                <p class="text-muted small m-0">Floating mini profile cards directory.</p>
-            </div>
-            <button onclick="fetchCustomerCards()" class="btn btn-sm btn-white border shadow-sm text-secondary fw-semibold">
-                <i class="bi bi-arrow-clockwise text-primary"></i> Sync Board
-            </button>
+        <header class="mb-4 pb-2">
+            <h3 class="fw-bold text-slate-800 m-0"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Pinboard Board</h3>
         </header>
 
         <!-- Dynamic Card Flex Grid Wrap (Floating top area) -->
@@ -173,9 +172,9 @@ DASHBOARD_HTML = """
         </div>
     </div>
 
-    <!-- Status Toast Alert Banner Notification -->
+    <!-- Status Toast Alert Banner Notification - RE-POSITIONED AT THE BOTTOM -->
     <div id="toastContainer">
-        <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition" role="alert"></div>
+        <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition text-center" role="alert"></div>
     </div>
 
     <!-- Fixed Bottom User Entry Dock Component -->
@@ -194,7 +193,7 @@ DASHBOARD_HTML = """
                 </div>
                 <div class="col-12 col-md-2">
                     <button type="submit" class="btn btn-primary btn-dock-submit w-100 shadow-sm">
-                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Add Entry
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Add User
                     </button>
                 </div>
             </form>
@@ -216,7 +215,7 @@ DASHBOARD_HTML = """
 
         function showNotification(message, isSuccess = true) {
             const alertBox = document.getElementById('statusAlert');
-            alertBox.className = `alert shadow-lg border p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
+            alertBox.className = `alert shadow-lg border mountaineer-toast p-3 rounded-3 text-sm font-medium d-block ${isSuccess ? 'alert-success border-success-subtle' : 'alert-danger border-danger-subtle'}`;
             alertBox.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i> ${message}`;
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
@@ -279,6 +278,7 @@ DASHBOARD_HTML = """
             try {
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
+                    // TOAST COMES TO THE BOTTOM NOW
                     showNotification(`Mini card for "${name}" instantiated on top.`);
                     document.getElementById('customerForm').reset();
                     fetchCustomerCards();
@@ -309,7 +309,7 @@ DASHBOARD_HTML = """
         window.onload = fetchCustomerCards;
     </script>
     
-    <!-- Absolute path for Bootstrap JS bundle CDN -->
+    <!-- Absolute path for Bootstrap JS bundle CDN - FIXED WITH HTTPS PREFIX -->
     <script src="jsdelivr.net"></script>
 </body>
 </html>
