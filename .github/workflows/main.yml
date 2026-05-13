@@ -59,22 +59,25 @@ jobs:
 
       - name: Deploy and Expose
         run: |
-          # 1. Force kill anything on port 5000
+          # 1. Force kill anything on port 5000 and 8080
           sudo lsof -t -i:5000 | xargs -r sudo kill -9 || true
-
-          # 4. Wait for Gunicorn to stabilize
-          sleep 10
+          sudo lsof -t -i:8080 | xargs -r sudo kill -9 || true
 
           # 2. Install LocalTunnel
           sudo npm install -g localtunnel
 
-          # 3. RUN THE APP DIRECTLY (This replaces Gunicorn)
-          # python app.py &
+          # 3. Launch the Backend API (Port 5000)
           python backend/app.py &
 
-          # 4. Wait for the app to initialize
+          # 4. Launch the Frontend Website UI (Port 8080)
+          cd frontend && python3 -m http.server 8080 &
+          cd ..
+
+          # 5. Wait for both services to initialize
           sleep 10
 
-          # 5. Start the tunnel
-          lt --port 5000 
+          # 6. Expose the FRONTEND GUI to the public internet
+          lt --port 8080
+
+
           
