@@ -138,6 +138,17 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             color: #ffffff;
         }
         .btn-dock-submit:hover { background: #4338ca; }
+        .btn-dock-cancel {
+            border-radius: 10px;
+            padding: 11px 20px;
+            font-weight: 600;
+            background: #64748b;
+            border: none;
+            width: 100%;
+            transition: all 0.2s;
+            color: #ffffff;
+        }
+        .btn-dock-cancel:hover { background: #475569; }
         .btn-toggle-main {
             border-radius: 50px;
             font-weight: 600;
@@ -184,29 +195,34 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
     <div class="bottom-dock py-3">
         <div class="container-fluid px-4 px-md-5">
+            <!-- Renamed button target to "Create User" -->
             <div id="triggerButtonContainer" class="text-center">
                 <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
-                    <i class="bi bi-person-plus-fill me-1"></i> Add User
+                    <i class="bi bi-person-plus-fill me-1"></i> Create User
                 </button>
             </div>
             <div id="formFieldsTray" class="hidden-fields-tray">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <h6 class="fw-bold text-slate-700 m-0"><i class="bi bi-file-earmark-person text-success me-1"></i> Input Profile Parameters</h6>
-                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" aria-label="Close"></button>
                 </div>
                 <form id="customerForm" class="row gx-3 gy-2 align-items-center">
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
                     </div>
                     <div class="col-12 col-md-2">
                         <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <input type="email" id="custEmail" required placeholder="Email Address" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="col-12 col-md-2">
+                    <div class="col-6 col-md-2">
                         <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">
-                            <i class="bi bi-check-circle-fill me-1"></i> Submit User
+                            <i class="bi bi-check-circle-fill me-1"></i> Submit
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <button type="button" onclick="toggleFormTray(false)" class="btn btn-secondary btn-dock-cancel shadow-sm">
+                            <i class="bi bi-x-circle-fill me-1"></i> Cancel
                         </button>
                     </div>
                 </form>
@@ -224,15 +240,16 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         };
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
+        // Updated visibility layout engine logic to correctly show/hide action structures
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
             const btnContainer = document.getElementById('triggerButtonContainer');
             if (shouldOpen) {
                 tray.classList.add('show');
-                btnContainer.classList.add('d-none');
+                btnContainer.classList.add('d-none'); // Completely hides Create User Button
             } else {
                 tray.classList.remove('show');
-                btnContainer.classList.remove('d-none');
+                btnContainer.classList.remove('d-none'); // Restores Create User Button
                 document.getElementById('customerForm').reset();
             }
         }
@@ -297,8 +314,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 
                 if (res.ok) {
                     showNotification(result.message || 'User profile updated successfully!');
-                    toggleFormTray(false);
-                    fetchAndRenderUsers();
+                    toggleFormTray(false); // Closes form layout inputs and completely shows Create User button again
+                    fetchAndRenderUsers(); // Triggers automated dashboard asynchronous refresh
                 } else {
                     showNotification(result.error || 'Failed to submit profile metrics.', false);
                 }
@@ -385,4 +402,4 @@ def delete_user(user_id):
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
