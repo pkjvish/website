@@ -91,7 +91,6 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             font-weight: 700;
             color: #1e293b;
             padding-right: 18px;
-            line-height: 1.3;
         }
         .user-detail {
             font-size: 0.85rem;
@@ -171,12 +170,14 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 
     <div class="bottom-dock py-3">
         <div class="container-fluid px-4 px-md-5">
+            <!-- Renamed button: 'Create User' -->
             <div id="triggerButtonContainer" class="text-center">
                 <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
                     <i class="bi bi-person-plus-fill me-1"></i> Create User
                 </button>
             </div>
             
+            <!-- Dynamic Form tray context fields wrapper -->
             <div id="formFieldsTray" class="hidden-fields-tray">
                 <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-3 w-100">
                     <div class="flex-grow-1">
@@ -206,15 +207,16 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         };
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
+        // Toggles visibility of 'Create User' button vs Form Input items
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
             const mainBtn = document.getElementById('mainToggleBtn');
             if (shouldOpen) {
                 tray.style.display = 'block';
-                mainBtn.style.display = 'none';
+                mainBtn.style.display = 'none'; // Hides create user trigger completely
             } else {
                 tray.style.display = 'none';
-                mainBtn.style.display = 'inline-block';
+                mainBtn.style.display = 'inline-block'; // Restores create user trigger button
                 document.getElementById('customerForm').reset();
             }
         }
@@ -239,21 +241,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 }
                 customers.forEach((customer, idx) => {
                     const assignedColor = pastelColors[idx % pastelColors.length];
-                    // REFACTORED CARD INTERNAL DISPLAY: TOP HAS USERNAME + AGE, BOTTOM HAS ISOLATED EMAIL
-                    board.innerHTML += `
-                        <div class="mini-card" style="background-color: \${assignedColor};">
-                            <button onclick="dropCustomerCard('\${customer.user_name}')" class="cross-delete-btn" title="Delete Card">
-                                <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
-                            </button>
-                            <div>
-                                <div class="user-title text-truncate">\${customer.user_name} (\${customer.user_age} yrs)</div>
-                            </div>
-                            <div class="pt-2 border-top border-dark border-opacity-10 mt-2">
-                                <div class="user-detail text-truncate fw-semibold">
-                                    <i class="bi bi-envelope-at-fill opacity-50 small"></i> \${customer.user_email}
-                                </div>
-                            </div>
-                        </div>`;
+                    board.innerHTML += `<div class="mini-card" style="background-color: \${assignedColor};"><button onclick="dropCustomerCard('\${customer.user_name}')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">\${customer.user_name}</div><div class="user-detail mt-1 fw-bold text-dark text-opacity-50"><i class="bi bi-hash small"></i> Age: \${customer.user_age} yrs</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> \solve; \${customer.user_email}</div></div></div>`;
                 });
             } catch (err) {
                 showNotification("Connection failure. Flask backend server unreachable.", false);
@@ -269,7 +257,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 const res = await fetch(`\${API_BASE_URL}/userc?name=\${encodeURIComponent(name)}&age=\${age}&email=\${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
                     showNotification(`Mini card for "\${name}" instantiated on top.`);
-                    toggleFormTray(false);
+                    toggleFormTray(false); // Hides inputs/Submit button, restores Create User button
                     fetchCustomerCards();
                 } else {
                     const errData = await res.json();
