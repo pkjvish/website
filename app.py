@@ -1,5 +1,3 @@
-		
-		
 from flask import Flask, request, jsonify, render_template_string
 from flask_mysqldb import MySQL
 
@@ -21,20 +19,22 @@ def get_all_users_list(cursor):
     user_list = []
     for row in rows:
         user_list.append({
-            "user_id": row,
-            "user_name": row,
-            "user_age": row,
-            "user_email": row
+            "user_id": row[0],
+            "user_name": row[1],
+            "user_age": row[2],
+            "user_email": row[3]
         })
     return user_list
 
-# Restructured HTML with Explicit Horizontal Flex Layout
-DASHBOARD_HTML = """<!DOCTYPE html>
+# Corrected Multi-Column Inverted Card-Based SPA Layout
+DASHBOARD_HTML = """
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Floating Mini Card Dashboard</title>
+    <!-- Absolute paths for CSS CDNs -->
     <link href="jsdelivr.net" rel="stylesheet">
     <link href="jsdelivr.net" rel="stylesheet">
     <style>
@@ -44,13 +44,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             background-size: 24px 24px;
             font-family: 'Segoe UI', system-ui, sans-serif;
             min-height: 100vh;
-            padding-bottom: 140px;
+            padding-bottom: 180px; /* Safe padding room for bottom dock */
         }
+        
+        /* Floating Mini Visiting Card Layout */
         .mini-card {
             border: none;
             border-radius: 12px;
             padding: 16px;
-            width: 240px;
+            width: 240px; /* Precise mini size framework */
             min-height: 125px;
             position: relative;
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -59,13 +61,18 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             flex-direction: column;
             justify-content: space-between;
         }
+        
+        /* Playful rotating sticky note simulation */
         .mini-card:nth-child(even) { transform: rotate(1deg); }
         .mini-card:nth-child(odd) { transform: rotate(-1deg); }
+        
         .mini-card:hover {
             transform: scale(1.06) rotate(0deg) translateY(-4px) !important;
             box-shadow: 0 12px 24px rgba(0,0,0,0.12);
             z-index: 50;
         }
+
+        /* Top-Right Cross Closing Button */
         .cross-delete-btn {
             position: absolute;
             top: 8px;
@@ -88,35 +95,41 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             color: #ffffff;
             transform: scale(1.1);
         }
+        
         .user-title {
             font-size: 1rem;
             font-weight: 700;
             color: #1e293b;
-            padding-right: 18px;
+            padding-right: 18px; /* Avoid overlapping with cross btn */
         }
+        
         .user-detail {
             font-size: 0.8rem;
             font-weight: 500;
             color: rgba(30, 41, 59, 0.7);
         }
+
+        /* Fixed Flat Glass-Blur Control Dock along bottom viewport */
         .bottom-dock {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-top: 1px solid rgba(226, 232, 240, 0.9);
             box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.06);
             z-index: 1000;
         }
+        
         .form-control-custom {
             border-radius: 10px;
             border: 1.5px solid #cbd5e1;
             padding: 10px 14px;
             font-size: 0.9rem;
             transition: all 0.2s;
+            width: 100%;
         }
         .form-control-custom:focus {
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
@@ -125,15 +138,15 @@ DASHBOARD_HTML = """<!DOCTYPE html>
         }
         .btn-dock-submit {
             border-radius: 10px;
-            padding: 10px 24px;
+            padding: 11px 20px;
             font-weight: 600;
             background: #4f46e5;
             border: none;
+            width: 100%;
             transition: all 0.2s;
-            color: #ffffff;
-            white-space: nowrap;
         }
         .btn-dock-submit:hover { background: #4338ca; }
+        
         .btn-toggle-main {
             border-radius: 50px;
             font-weight: 600;
@@ -141,9 +154,12 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
             transition: all 0.2s;
         }
+        .btn-toggle-main:hover { transform: translateY(-1px); }
+        
+        /* Toast aligned directly above the bottom input bar controls */
         #toastContainer {
             position: fixed;
-            bottom: 110px;
+            bottom: 130px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1060;
@@ -151,6 +167,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             min-width: 320px;
             max-width: 90%;
         }
+        
+        /* Fixed horizontal dimensions constraint matrix */
         .hidden-fields-tray {
             max-height: 0;
             opacity: 0;
@@ -158,65 +176,87 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hidden-fields-tray.show {
-            max-height: 120px;
+            max-height: 250px;
             opacity: 1;
-            padding: 5px 0;
+            padding: 10px 0;
         }
     </style>
 </head>
 <body>
 
+    <!-- Main Container For Top Floating Cards Area -->
     <div class="container-fluid px-4 pt-4">
         <header class="mb-4 pb-2">
             <h3 class="fw-bold text-slate-800 m-0"><i class="bi bi-pin-angle-fill text-danger me-2"></i>Pinboard Board</h3>
         </header>
-        <div id="cardsBoard" class="d-flex flex-wrap gap-3 align-items-start justify-content-start"></div>
+
+        <!-- Dynamic Card Flex Grid Wrap (Floating top area) -->
+        <div id="cardsBoard" class="d-flex flex-wrap gap-3 align-items-start justify-content-start">
+            <!-- Mini notes load dynamically here -->
+        </div>
     </div>
 
+    <!-- Status Toast Alert Banner Notification -->
     <div id="toastContainer">
         <div id="statusAlert" class="alert d-none shadow-lg border p-3 rounded-3 text-sm font-medium transition text-center" role="alert"></div>
     </div>
 
+    <!-- Fixed Bottom User Entry Dock Component -->
     <div class="bottom-dock py-3">
         <div class="container-fluid px-4 px-md-5">
+            
+            <!-- Baseline State Trigger Button -->
             <div id="triggerButtonContainer" class="text-center">
                 <button onclick="toggleFormTray(true)" id="mainToggleBtn" class="btn btn-primary btn-toggle-main">
                     <i class="bi bi-person-plus-fill me-1"></i> Add User
                 </button>
             </div>
-            
+
+            <!-- Horizontal Rows Tray Configuration Layout -->
             <div id="formFieldsTray" class="hidden-fields-tray">
-                <form id="customerForm" class="d-md-flex align-items-center justify-content-between gap-2 w-100">
-                    <div class="flex-grow-1 mb-2 mb-md-0">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold text-slate-700 m-0"><i class="bi bi-file-earmark-person text-success me-1"></i> Input Profile Parameters</h6>
+                    <button type="button" onclick="toggleFormTray(false)" class="btn-close" aria-label="Close"></button>
+                </div>
+                
+                <!-- Fixed structural row grid preventing columns from dropping -->
+                <form id="customerForm" class="row gx-3 gy-2 align-items-center">
+                    <div class="col-12 col-md-4">
                         <input type="text" id="custName" required placeholder="Customer Full Name" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="mb-2 mb-md-0" style="min-width: 100px; max-width: 140px;">
+                    <div class="col-12 col-md-2">
                         <input type="number" id="custAge" required min="1" max="120" placeholder="Age" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="flex-grow-1 mb-2 mb-md-0">
-                        <input type="email" id="custEmail" required placeholder="Email Address" class="form-control form-control-custom shadow-none">
+                    <div class="col-12 col-md-4">
+                        <input type="email" id="custEmail" required placeholder="Email Address (e.g. santosh@email.com)" class="form-control form-control-custom shadow-none">
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">Submit User</button>
-                        <button type="button" onclick="toggleFormTray(false)" class="btn btn-outline-secondary rounded-3 px-3">Cancel</button>
+                    <div class="col-12 col-md-2">
+                        <button type="submit" class="btn btn-primary btn-dock-submit shadow-sm">
+                            <i class="bi bi-check-circle-fill me-1"></i> Submit User
+                        </button>
                     </div>
                 </form>
             </div>
+            
         </div>
     </div>
 
+    <!-- AJAX SPA JavaScript Runtime Framework Core -->
     <script>
         const API_BASE_URL = window.location.origin;
+
         const dashboardHeaders = { 
             'X-Requested-From': 'Dashboard',
             'Accept': 'application/json',
             'Bypass-Tunnel-Reminder': 'true'
         };
+
         const pastelColors = ['#fef08a', '#fbcfe8', '#bbf7d0', '#bfdbfe', '#e9d5ff', '#fed7aa', '#ccfbf1'];
 
         function toggleFormTray(shouldOpen) {
             const tray = document.getElementById('formFieldsTray');
             const mainBtn = document.getElementById('mainToggleBtn');
+            
             if (shouldOpen) {
                 tray.classList.add('show');
                 mainBtn.classList.add('d-none');
@@ -234,31 +274,59 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             setTimeout(() => { alertBox.className = 'alert d-none'; }, 4000);
         }
 
+        // 1. FETCH ASYNC: Pull user records and render top-floating mini cards
         async function fetchCustomerCards() {
             try {
                 const response = await fetch(`${API_BASE_URL}/users`, { headers: dashboardHeaders });
                 const data = await response.json();
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
+
                 const customers = data.filter(item => item.user_id !== undefined);
+
                 if (customers.length === 0) {
-                    board.innerHTML = `<div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic"><i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.</div>`;
+                    board.innerHTML = `
+                        <div class="w-100 text-center py-5 bg-white border border-secondary-subtle rounded-3 text-muted italic">
+                            <i class="bi bi-clipboard-x display-6 d-block mb-2 opacity-50"></i> Pinboard workspace is currently empty.
+                        </div>`;
                     return;
                 }
+
                 customers.forEach((customer, idx) => {
                     const assignedColor = pastelColors[idx % pastelColors.length];
-                    board.innerHTML += `<div class="mini-card" style="background-color: ${assignedColor};"><button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card"><i class="bi bi-x-lg" style="font-size: 0.75rem;"></i></button><div><div class="user-title text-truncate">${customer.user_name}</div><div class="user-detail mt-1 fw-bold text-dark text-opacity-50"><i class="bi bi-hash small"></i> Age: ${customer.user_age} yrs</div></div><div class="pt-2 border-top border-dark border-opacity-10 mt-2"><div class="user-detail text-truncate fw-semibold"><i class="bi bi-envelope-at-fill opacity-50 small"></i> ${customer.user_email}</div></div></div>`;
+                    
+                    board.innerHTML += `
+                        <div class="mini-card" style="background-color: ${assignedColor};">
+                            <button onclick="dropCustomerCard('${customer.user_name}')" class="cross-delete-btn" title="Delete Card">
+                                <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
+                            </button>
+                            
+                            <div>
+                                <div class="user-title text-truncate">${customer.user_name}</div>
+                                <div class="user-detail mt-1 fw-bold text-dark text-opacity-50">
+                                    <i class="bi bi-hash small"></i> Age: ${customer.user_age} yrs
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-top border-dark border-opacity-10 mt-2">
+                                <div class="user-detail text-truncate fw-semibold">
+                                    <i class="bi bi-envelope-at-fill opacity-50 small"></i> ${customer.user_email}
+                                </div>
+                            </div>
+                        </div>`;
                 });
             } catch (err) {
                 showNotification("Connection failure. Flask backend server unreachable.", false);
             }
         }
 
+        // 2. POST ASYNC: Add entries from bottom layout form safely via AJAX
         document.getElementById('customerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('custName').value.trim();
             const age = document.getElementById('custAge').value;
             const email = document.getElementById('custEmail').value.trim();
+
             try {
                 const res = await fetch(`${API_BASE_URL}/userc?name=${encodeURIComponent(name)}&age=${age}&email=${encodeURIComponent(email)}`, { headers: dashboardHeaders });
                 if (res.ok) {
@@ -274,6 +342,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             }
         });
 
+        // 3. DELETE ASYNC: Erase card parameter instantly via cross close button
         async function dropCustomerCard(name) {
             try {
                 const res = await fetch(`${API_BASE_URL}/userd?name=${encodeURIComponent(name)}`, { headers: dashboardHeaders });
@@ -287,76 +356,11 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 showNotification("Network connection failure during deletion cycle.", false);
             }
         }
+
         window.onload = fetchCustomerCards;
     </script>
+    
+    <!-- Absolute path for Bootstrap JS bundle CDN -->
     <script src="jsdelivr.net"></script>
 </body>
-</html>"""
-
-# 3. ROUTE: SERVES INTEGRATED DASHBOARD SPA
-@app.route('/', methods=['GET'])
-def home_dashboard():
-    return render_template_string(DASHBOARD_HTML)
-
-# 4. ROUTE: LIST ALL USERS FROM DATABASE
-@app.route('/users', methods=['GET'])
-def list_all_users():
-    try:
-        cur = mysql.connection.cursor()
-        user_list = get_all_users_list(cur)
-        cur.close()
-        user_list.append({"instruction": "To add a user, go to /userc?name=abc&age=25&email=abc.com. To delete a user, go to /userd?name=abc"})
-        return jsonify(user_list), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# 5. ROUTE: ADD USER VIA URL QUERY PARAMETERS
-@app.route('/userc', methods=['GET'])
-def add_user_via_url():
-    name = request.args.get('name')
-    age = request.args.get('age')
-    email = request.args.get('email')
-
-    if not name or not age or not email:
-        return jsonify({"error": "Missing query parameters.", "instruction": "Please build your URL target exactly like this: /userc?name=abc&age=25&email=abc.com"}), 400
-
-    try:
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO tbl_user(user_name, user_age, user_email) VALUES (%s, %s, %s)", (name, age, email))
-        mysql.connection.commit()
-        user_list = get_all_users_list(cur)
-        cur.close()
-        user_list.append({"instruction": "User added successfully! Modify your parameters to add more users: /userc?name=abc&age=25&email=abc.com"})
-        return jsonify(user_list), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# 6. ROUTE: DELETE USER BY URL QUERY PARAMETER (BY NAME)
-@app.route('/userd', methods=['GET'])
-def delete_user_via_url():
-    name = request.args.get('name')
-
-    if not name:
-        return jsonify({"error": "Missing target query parameter.", "instruction": "Please pass the user name to remove like this: /userd?name=abc"}), 400
-
-    try:
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT user_id FROM tbl_user WHERE user_name = %s", (name,))
-        if not cur.fetchone():
-            user_list = get_all_users_list(cur)
-            cur.close()
-            user_list.append({"error": f"User '{name}' not found.", "instruction": "Verify spelling or review active profiles at /users"})
-            return jsonify(user_list), 404
-            
-        cur.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
-        mysql.connection.commit()
-        user_list = get_all_users_list(cur)
-        cur.close()
-        user_list.append({"instruction": f"User '{name}' deleted successfully! View changes above or use /userc to append values."})
-        return jsonify(user_list), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)		
-		
+</html>
