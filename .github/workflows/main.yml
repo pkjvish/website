@@ -67,7 +67,8 @@ jobs:
           sudo npm install -g localtunnel
 
           # 3. RUN THE APP DIRECTLY (This replaces Gunicorn)
-          python app.py &
+          # python app.py &
+          python backend/app.py &
 
           # 4. Wait for the app to initialize
           sleep 10
