@@ -353,27 +353,28 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 def index():
     return render_template_string(DASHBOARD_HTML)
 
+# 1) List all users with /users
 @app.route('/users', methods=['GET'])
-def read_users():
+def get_users():
     try:
         cursor = mysql.connection.cursor()
         users = get_all_users_list(cursor)
         cursor.close()
-        return jsonify(users), 200
+        return jsonify({"users": users}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/users', methods=['POST'])
-def create_user():
-    data = request.get_json() or {}
-    name = data.get('name')
-    age = data.get('age')
-    email = data.get('email')
-
-    if not name or not age or not email:
-        return jsonify({"error": "Missing mandatory profile criteria elements."}), 400
-
+# 2) Create user via api /userc?name=pkj&age=55&email=anv@bnv.com
+@app.route('/userc', methods=['GET'])
+def add_user():
     try:
+        name = request.args.get('name')
+        age = request.args.get('age')
+        email = request.args.get('email')
+
+        if not name or not age or not email:
+            return jsonify({"error": "Missing parameters name, age, or email"}), 400
+
         cursor = mysql.connection.cursor()
         cursor.execute(
             "INSERT INTO tbl_user (user_name, user_age, user_email) VALUES (%s, %s, %s)",
@@ -381,23 +382,53 @@ def create_user():
         )
         mysql.connection.commit()
         cursor.close()
-        return jsonify({"message": "User entity appended successfully."}), 201
+        return jsonify({"message": "User card initialized successfully"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+# 3) Delete user via api /userd?name=pkj
+@app.route('/userd', methods=['GET'])
+def delete_user():
     try:
+        name = request.args.get('name')
+        if not name:
+            return jsonify({"error": "Missing parameter name"}), 400
+
         cursor = mysql.connection.cursor()
-        cursor.execute("DELETE FROM tbl_user WHERE user_id = %s", (user_id,))
+        cursor.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
         mysql.connection.commit()
-        
-        if cursor.rowcount == 0:
-            cursor.close()
-            return jsonify({"error": "Target unique resource identity key match not found."}), 404
-            
         cursor.close()
-        return jsonify({"message": "Target user records systematically dropped."}), 200
+        return jsonify({"message": f"User '{name}' safely scrubbed from database"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 4) Update user via api /useru?name=pkj
+@app.route('/useru', methods=['GET'])
+def update_user():
+    try:
+        name = request.args.get('name')
+        age = request.args.get('age')
+        email = request.args.get('email')
+
+        if not name:
+            return jsonify({"error": "Missing target matching identifier parameter: name"}), 400
+
+        cursor = mysql.connection.cursor()
+        
+        # Pull parameters dynamically depending on what details were provided in string
+        if age and email:
+            cursor.execute("UPDATE tbl_user SET user_age = %s, user_email = %s WHERE user_name = %s", (age, email, name))
+        elif age:
+            cursor.execute("UPDATE tbl_user SET user_age = %s WHERE user_name = %s", (age, name))
+        elif email:
+            cursor.execute("UPDATE tbl_user SET user_email = %s WHERE user_name = %s", (email, name))
+        else:
+            cursor.close()
+            return jsonify({"error": "No update metrics (age/email) were supplied"}), 400
+
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": f"User targets for '{name}' synchronized"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
