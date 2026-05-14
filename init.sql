@@ -12,5 +12,6 @@ CREATE TABLE tbl_user (
 
 -- Insert starting sample data matching the new layout
 INSERT INTO tbl_user (user_name, user_age, user_email) VALUES 
-('Pankaj Kumar', 28, 'pankaj@example.com'),
-('Jane Doe', 34, 'jane@example.com');
+('Pankaj', 28, 'pankaj@example.com'),
+('Rishi', 50, 'rishi@hotmail.com'),
+('Vijay', 34, 'Vijay@gmail.com');
