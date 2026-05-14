@@ -269,7 +269,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
                 const board = document.getElementById('cardsBoard');
                 board.innerHTML = '';
                 
-                if(users.length === 0) {
+                if(!users || users.length === 0) {
                     board.innerHTML = '<div class="text-secondary fs-6 py-4 mx-auto"><i class="bi bi-inbox me-2"></i>No profiles pinned yet.</div>';
                     return;
                 }
@@ -353,24 +353,25 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 def index():
     return render_template_string(DASHBOARD_HTML)
 
-# 1) List all users with /users
+# 1) List all users GET /users
 @app.route('/users', methods=['GET'])
 def get_users():
     try:
         cursor = mysql.connection.cursor()
         users = get_all_users_list(cursor)
         cursor.close()
-        return jsonify({"users": users}), 200
+        return jsonify(users), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 2) Create user via api /userc?name=pkj&age=55&email=anv@bnv.com
-@app.route('/userc', methods=['GET'])
+# 2) Create user POST /users
+@app.route('/users', methods=['POST'])
 def add_user():
     try:
-        name = request.args.get('name')
-        age = request.args.get('age')
-        email = request.args.get('email')
+        data = request.get_json()
+        name = data.get('name')
+        age = data.get('age')
+        email = data.get('email')
 
         if not name or not age or not email:
             return jsonify({"error": "Missing parameters name, age, or email"}), 400
@@ -381,12 +382,30 @@ def add_user():
             (name, age, email)
         )
         mysql.connection.commit()
+        
+        # Fetch and return updated user list
+        users = get_all_users_list(cursor)
         cursor.close()
-        return jsonify({"message": "User card initialized successfully"}), 201
+        return jsonify({"message": "User card initialized successfully", "users": users}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 3) Delete user via api /userd?name=pkj
+# 3) Delete user DELETE /users/<user_id>
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user_by_id(user_id):
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("DELETE FROM tbl_user WHERE user_id = %s", (user_id,))
+        mysql.connection.commit()
+        
+        # Fetch and return updated user list
+        users = get_all_users_list(cursor)
+        cursor.close()
+        return jsonify({"message": "User profile successfully removed", "users": users}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 4) Delete user via api /userd?name=pkj (legacy)
 @app.route('/userd', methods=['GET'])
 def delete_user():
     try:
@@ -397,12 +416,15 @@ def delete_user():
         cursor = mysql.connection.cursor()
         cursor.execute("DELETE FROM tbl_user WHERE user_name = %s", (name,))
         mysql.connection.commit()
+        
+        # Fetch and return updated user list
+        users = get_all_users_list(cursor)
         cursor.close()
-        return jsonify({"message": f"User '{name}' safely scrubbed from database"}), 200
+        return jsonify({"message": f"User '{name}' safely scrubbed from database", "users": users}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# 4) Update user via api /useru?name=pkj
+# 5) Update user via api /useru?name=pkj
 @app.route('/useru', methods=['GET'])
 def update_user():
     try:
@@ -427,8 +449,11 @@ def update_user():
             return jsonify({"error": "No update metrics (age/email) were supplied"}), 400
 
         mysql.connection.commit()
+        
+        # Fetch and return updated user list
+        users = get_all_users_list(cursor)
         cursor.close()
-        return jsonify({"message": f"User targets for '{name}' synchronized"}), 200
+        return jsonify({"message": f"User targets for '{name}' synchronized", "users": users}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
