@@ -390,6 +390,31 @@ def add_user():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 2b) Create user via GET /userc?name=mani&age=56&email=mani@gmail.com (legacy)
+@app.route('/userc', methods=['GET'])
+def add_user_legacy():
+    try:
+        name = request.args.get('name')
+        age = request.args.get('age')
+        email = request.args.get('email')
+
+        if not name or not age or not email:
+            return jsonify({"error": "Missing parameters. Use /userc?name=mani&age=56&email=mani@gmail.com"}), 400
+
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "INSERT INTO tbl_user (user_name, user_age, user_email) VALUES (%s, %s, %s)",
+            (name, age, email)
+        )
+        mysql.connection.commit()
+        
+        # Fetch and return updated user list
+        users = get_all_users_list(cursor)
+        cursor.close()
+        return jsonify({"message": "User card initialized successfully", "users": users}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # 3) Delete user DELETE /users/<user_id>
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_user_by_id(user_id):
